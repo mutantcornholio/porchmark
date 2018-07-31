@@ -21,7 +21,7 @@ if (program.args.length === 0) {
 view.splashScreen();
 
 raceMaster.race(program.args, {
-    iterations: program.iterations || 300,
+    maxIterations: program.iterations || 300,
     workers: program.parallel || 1,
 });
 
