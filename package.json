@@ -1,0 +1,19 @@
+{
+  "name": "porchmark",
+  "version": "0.0.1",
+  "description": "Simple tool ",
+  "main": "bin/porchmark.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cornholio <0@mcornholio.ru>",
+  "license": "ISC",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "cli-table": "^0.3.1",
+    "colors": "^1.3.1",
+    "commander": "^2.16.0",
+    "puppeteer": "^1.6.1",
+    "simple-statistics": "^6.1.0"
+  }
+}
