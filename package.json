@@ -2,9 +2,11 @@
   "name": "porchmark",
   "version": "0.0.1",
   "description": "Simple tool ",
-  "main": "bin/porchmark.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "porchmark": "./bin/porchmark.js"
   },
   "author": "cornholio <0@mcornholio.ru>",
   "license": "ISC",
