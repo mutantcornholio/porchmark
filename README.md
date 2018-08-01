@@ -3,6 +3,8 @@ Simple tool to compare browser performance of several sites simultaneously.
 Based on puppeteer.
 It opens given pages at the same time, and grabs browser performance metrics. Until you'll get tired.
 
+![screencast.gif](https://s3.us-east-2.amazonaws.com/mcornholio-s3/porchmark-screencast.gif)
+
 Installation:
 ```
 npm install -g porchmark
