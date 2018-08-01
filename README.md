@@ -18,6 +18,7 @@ Usage:
     -V, --version         output the version number
     -i, --iterations <n>  stop after n iterations; defaults to 300
     -P, --parallel <n>    run checks in n workers; defaults to 1
+    -m, --mobile          chrome mobile UA, iphone 6-like screen, touch events, etc.
     -h, --help            output usage information
 ```
 
