@@ -3,8 +3,10 @@ import program from 'commander';
 
 import startWorking from '@/lib/workerFarm';
 import {DataProcessor} from '@/lib/dataProcessor';
-import {shutdown, console as viewConsole, emergencyShutdown} from '@/lib/view';
 import * as view from '@/lib/view';
+import {emergencyShutdown, shutdown, viewConsole} from '@/lib/view';
+import {resolveOptions} from '@/lib/options';
+
 
 const {version} = require('../../package.json');
 
@@ -16,6 +18,8 @@ program
     .option('-P, --parallel <n>', 'run checks in n workers; defaults to 1', parseInt)
     .option('-m, --mobile', 'chrome mobile UA, iphone 6-like screen, touch events, etc.')
     .option('-k, --insecure', 'ignore HTTPS errors')
+    .option('-t, --timeout <n>', 'timeout in seconds for each check; defaults to 20s', parseInt)
+    .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
     .parse(process.argv);
 
 if (program.args.length === 0) {
@@ -23,13 +27,18 @@ if (program.args.length === 0) {
     process.exit(1);
 }
 
+export type Argv = {
+    iterations?: number,
+    parallel?: number,
+    mobile?: boolean,
+    insecure?: boolean,
+    timeout?: number,
+    config?: string,
+}
+
 const sites = program.args;
-const options = {
-    maxIterations: program.iterations || 300,
-    workers: program.parallel || 1,
-    mobile: program.mobile || false,
-    insecure: program.insecure || false,
-};
+
+const options = resolveOptions(program as Argv);
 
 const dataProcessor = new DataProcessor(sites, options);
 
@@ -42,10 +51,3 @@ startWorking(sites, dataProcessor, options).catch(emergencyShutdown);
 process.on('unhandledRejection', e => viewConsole.error(e));
 process.on('SIGINT', () => shutdown(false));
 process.on('SIGTERM', () => shutdown(false));
-
-export type Options = {
-    maxIterations: number,
-    workers: number,
-    mobile: boolean,
-    insecure: boolean,
-}

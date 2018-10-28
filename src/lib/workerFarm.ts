@@ -1,12 +1,14 @@
-import {Options} from '@/bin/porchmark';
+import {Options} from '@/lib/options';
 import {
     OriginalMetrics,
     watchingMetrics,
     watchingMetricsRealNames
 } from '@/types';
+
 import {DataProcessor} from '@/lib/dataProcessor';
-import {runCheck} from '@/lib/browser';
-import * as view from '@/lib/view';
+import {runPuppeteerCheck} from '@/lib/puppeteer';
+import {runWebdriverCheck} from '@/lib/webdriverio';
+import {viewConsole, shutdown} from '@/lib/view';
 import {sleep} from '@/lib/helpers';
 
 const workerSet = new Set();
@@ -14,6 +16,7 @@ const workerSet = new Set();
 
 export default async function startWorking(sites: string[], dataProcessor: DataProcessor, options: Options) {
     let workersDone = 0;
+    const runCheck = (options.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
     // Controls the number of workers, spawns new ones, stops process when everything's done
     async function populateWorkers() {
@@ -35,15 +38,14 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
                 job.then(clearJob, clearJob);
             }
 
-            await Promise.race(workerSet.entries());
-            await sleep(100);
+            await Promise.race(Array.prototype.slice.call(workerSet.entries()).concat(sleep(100)));
         }
 
-        view.shutdown(false);
+        shutdown(false);
     }
 
     function handleWorkerError(error: Error): void {
-        view.console.error(error);
+        viewConsole.error(error);
     }
 
     function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
@@ -58,9 +60,14 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
     }
 
     async function runWorker(siteIndex: number, sites: string[], options: Options): Promise<void> {
-        const metrics = await runCheck(sites[siteIndex], siteIndex, options);
+        const metrics = await Promise.race([
+            sleep(options.timeout).then(() => {throw new Error(`Timeout on site #${siteIndex}, ${sites[siteIndex]}`)}),
+            runCheck(sites[siteIndex], siteIndex, options)
+        ]);
 
-        registerMetrics([metrics, siteIndex]);
+        if (metrics !== null) {
+            registerMetrics([metrics, siteIndex]);
+        }
     }
 
     populateWorkers().catch(() => {});

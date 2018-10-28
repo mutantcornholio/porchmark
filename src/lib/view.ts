@@ -1,11 +1,11 @@
-import {calculatingStats} from './stats';
-
-import {stdoutRect} from './helpers';
 import colors from 'colors/safe';
 import Table, {Cell} from 'cli-table2';
 import blessed, {Widgets} from 'blessed';
 import {Console} from 'console';
 import {Writable} from 'stream';
+
+import {calculatingStats} from '@/lib/stats';
+import {stdoutRect} from '@/lib/helpers';
 import {watchingMetrics} from '@/types';
 
 let screen: Widgets.Screen;
@@ -42,8 +42,7 @@ class ConsoleStream extends Writable {
 }
 
 const logStream = new ConsoleStream();
-const viewConsole = new Console(logStream, logStream);
-export {viewConsole as console};
+export const viewConsole = new Console(logStream, logStream);
 
 const metrCount = watchingMetrics.length * 2;
 
@@ -149,49 +148,37 @@ export function emergencyShutdown(error: Error) {
     shutdown(true);
 }
 
-function trimSitenames(_sites: string[]): string[] {
-    const sites = _sites.slice();
+let paddedSitenames: string[];
+let maxLength: number;
+let spaceInsufficiency: number;
 
-    let letterIndex = 0;
-    for (; letterIndex < sites[0].length; letterIndex++) {
-        let differed = false;
-        const currentSymbol = sites[0][letterIndex];
-        for (let siteIndex = 1; siteIndex < sites.length; siteIndex++) {
-            if (currentSymbol === sites[siteIndex][letterIndex]) {
-                continue;
-            }
+function trimSitenames(sites: string[]): string[] {
+    if (!paddedSitenames) {
+        maxLength = Math.max(...sites.map(site => site.length));
 
-            differed = true;
-            break;
-        }
+        paddedSitenames = sites.map(site => {
+            const pad = Math.ceil((maxLength - site.length) / 2);
 
-        if (differed) {
-            break;
-        }
+            return site.padEnd(pad).padStart(pad);
+        });
+
+        spaceInsufficiency = maxLength - maxSitenameWidth;
     }
 
-    const trimmedSites = [];
-    for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-        let res;
-        // const res = '…' + sites[siteIndex].slice(letterIndex - 4);
-        if (sites[siteIndex].length < maxSitenameWidth) {
-            res = colors.red(sites[siteIndex]);
-        } else if (letterIndex > 8) {
-            let startCut = 0;
-
-            if (sites[siteIndex].length - letterIndex < maxSitenameWidth) {
-                startCut = sites[siteIndex].length - maxSitenameWidth + 3;
-            } else {
-                startCut = letterIndex + 3;
-            }
-
-            res = colors.grey('…') + colors.red(sites[siteIndex].slice(startCut));
-        } else {
-            res = colors.red(sites[siteIndex]);
-        }
-        trimmedSites[siteIndex] = res;
+    const shifter = (Date.now()/200) % (spaceInsufficiency * 2.5) - spaceInsufficiency * 0.25;
+    let position: number;
+    if (shifter < 0) {
+        position = 0
+    } else if (shifter < spaceInsufficiency) {
+        position = shifter;
+    } else if (shifter < spaceInsufficiency * 1.25) {
+        position = spaceInsufficiency;
+    } else if (shifter < spaceInsufficiency * 2) {
+        position = 2 * spaceInsufficiency - shifter;
+    } else if (shifter < spaceInsufficiency * 2) {
+        position = 0;
     }
 
-    return trimmedSites;
+    return paddedSitenames.map(site => colors.green(site.slice(position)));
 }
 

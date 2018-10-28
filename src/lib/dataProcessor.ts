@@ -1,23 +1,35 @@
 import {watchingMetrics} from '@/types';
 import {calculatingStats} from '@/lib/stats';
-import {Options} from '@/bin/porchmark';
-import {hasOnlyNumbers, indexOfMin, roundToNDigits} from '@/lib/helpers';
+import {Options} from '@/lib/options';
+import {indexOfMin, roundToNDigits} from '@/lib/helpers';
 import colors from 'colors/safe';
 
+
+type Sites = string[];
+type RawMetrics = (number)[][][];
+type Stats = (number|null)[][][];
+type Diffs = (number|null)[][][];
+type Highlights = (-1|0|1|null)[][][];
+type PaintedMetrics = (string|null)[][][];
+type PaintedDiffs = (string|null)[][][];
+type Iterations = number[];
+type ActiveTests = number[];
+type StatArrays = (number|null)[][][];
+
 export class DataProcessor {
-    sites: string[];
+    sites: Sites;
     options: Options;
 
-    rawMetrics: (number)[][][];
-    stats: (number|null)[][][];
-    diffs: (number|null)[][][];
-    highlights: (-1|0|1)[][][];
-    paintedMetrics: (string)[][][];
-    paintedDiffs: (string)[][][];
-    iterations: number[];
-    activeTests: number[];
+    rawMetrics: RawMetrics;
+    stats: Stats;
+    diffs: Diffs;
+    highlights: Highlights;
+    paintedMetrics: PaintedMetrics;
+    paintedDiffs: PaintedDiffs;
+    iterations: Iterations;
+    activeTests: ActiveTests;
     calculationCache: {
-        statArrays: (number|null)[][][],
+        statArrays: StatArrays,
     };
 
     constructor(sites: string[], options: Options) {
@@ -98,14 +110,14 @@ export class DataProcessor {
 
     // Does ALL calculations, returns ALL data
     calculateResults(): {
-        sites: string[],
-        stats: (number|null)[][][],
-        diffs: (number|null)[][][],
-        highlights: (-1|0|1)[][][],
-        paintedMetrics: (string|null)[][][],
-        paintedDiffs: (string|null)[][][],
-        iterations: number[],
-        activeTests: number[],
+        sites: Sites,
+        stats: Stats,
+        diffs: Diffs,
+        highlights: Highlights,
+        paintedMetrics: PaintedMetrics,
+        paintedDiffs: PaintedDiffs,
+        iterations: Iterations,
+        activeTests: ActiveTests,
     } {
 
         this.resetCache();
@@ -187,10 +199,8 @@ export class DataProcessor {
                 const statArray = this.getStatArray(statIndex, metricIndex);
 
                 let paintArray = null;
-                if (hasOnlyNumbers(statArray)) {
-                    const stat = calculatingStats[statIndex];
-                    paintArray = stat.paint(statArray);
-                }
+                const stat = calculatingStats[statIndex];
+                paintArray = stat.paint(statArray);
 
                 for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
                     this.highlights[siteIndex][metricIndex][statIndex] =
@@ -211,9 +221,9 @@ export class DataProcessor {
 
                     if (itemValue === null) {
                         res = '';
-                    } else if (itemPaint > 0) {
+                    } else if (itemPaint === 1) {
                         res = colors.green(itemValue.toString());
-                    } else if (itemPaint < 0) {
+                    } else if (itemPaint === -1) {
                         res = colors.red(itemValue.toString());
                     } else {
                         res = itemValue.toString();
