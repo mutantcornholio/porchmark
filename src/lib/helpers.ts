@@ -22,7 +22,7 @@ export function roundToNDigits(value: number, digits: number) {
     return Math.round(value * rounder) / rounder;
 }
 
-export function sleep(time: number) {
+export function sleep(time: number): Promise<void> {
     return new Promise(resolve => {
         setTimeout(resolve, time);
     });
