@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import program from 'commander';
 
-import startWorking from '../lib/workerFarm';
+import startWorking from '@/lib/workerFarm';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {shutdown, console as viewConsole, emergencyShutdown} from '@/lib/view';
 import * as view from '@/lib/view';
@@ -23,9 +23,6 @@ if (program.args.length === 0) {
     process.exit(1);
 }
 
-// splashScreen();
-// init();
-
 const sites = program.args;
 const options = {
     maxIterations: program.iterations || 300,
@@ -37,9 +34,7 @@ const options = {
 const dataProcessor = new DataProcessor(sites, options);
 
 setInterval(() => {
-    // if (dataProcessor.getLeastIterations() > 0) {
-        view.renderTable(dataProcessor.calculateResults());
-    // }
+    view.renderTable(dataProcessor.calculateResults());
 }, 200);
 
 startWorking(sites, dataProcessor, options).catch(emergencyShutdown);
