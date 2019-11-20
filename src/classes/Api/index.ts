@@ -382,10 +382,12 @@ export class Api {
             results? : any // TODO
         },
     ): Promise<{}> {
-        const nodejsMajorVersion = Number(process.version.split('.')[0]);
+        const nodejsMajorVersion = Number(process.versions.node.split('.')[0]);
+
+        this._logger.info(`node version=${nodejsMajorVersion}`);
 
         if (nodejsMajorVersion < 10) {
-            throw new Error('lighthouse work only with nodejs > 10.13 (class URLShim extends URL <===)');
+            throw new Error('lighthouse works only with nodejs > 10.13 (class URLShim extends URL error)');
         }
 
         // lighthouse works only with node > 10.13
@@ -463,8 +465,7 @@ export class Api {
                     results[site.name][metric].numericValue.push(audits[metric].numericValue);
                 });
 
-                // TODO via logger
-                console.log(`${i}: TTI=${audits.interactive.displayValue}`);
+                this._logger.info(`${site.name} ${i}: TTI=${audits.interactive.displayValue}`);
             }
 
             await browser.close();

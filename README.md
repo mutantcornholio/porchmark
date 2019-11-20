@@ -66,9 +66,11 @@ module.exports = {
 
 ```
 
-## `porchmark compare-releases --config <filepath>`
+## `porchmark compare-releases --config <filefile>`
 
 compare sites using Web Page Replay
+
+see `workDir` for logs, screenshots, and results
 
 Config file: 
 
@@ -114,3 +116,9 @@ module.exports = {
   }
 }
 ```
+
+## `porchmark compare-lighthouse --config <configfile>`
+
+compare sites with lighthouse
+
+Config file identical with `compare-releases`

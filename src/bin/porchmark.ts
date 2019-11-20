@@ -95,6 +95,41 @@ program.command('compare-releases')
         }
     });
 
+// compare-lighthouse
+program.command('compare-lighthouse')
+    .description('compare releases with lighthouse')
+    .option('-c  --config [configfile.js]', 'path to config')
+    .action(async function (this: Command) {
+        setCurrentCommand(this);
+
+        if (!this.config) {
+            logger.fatal('set path to compare config, use --config option');
+            process.exit(1);
+        }
+
+        const rawConfigFilepath = this.config;
+
+        const configFilepath = path.isAbsolute(rawConfigFilepath) ? rawConfigFilepath : path.resolve(rawConfigFilepath);
+
+        // TODO check file exists and require errors
+        let config: IRawCompareReleasesConfig = require(configFilepath);
+
+        const api = new CommandApi(logger);
+
+        try {
+            await api.compareLighthouse(config.workDir, config);
+        } catch (error) {
+            if (error.isJoi) {
+                logger.fatal(`invalid config\n${JSON.stringify(config, null, 2)}`);
+                error.details.forEach((e: any) => {
+                    logger.fatal(`path=${e.path.join('.')}, ${e.message}`)
+                });
+            } else {
+                logger.error(error);
+            }
+        }
+    });
+
 program.parse(process.argv);
 
 if (!currentCommand.length) {
