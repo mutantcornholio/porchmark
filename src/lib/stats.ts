@@ -1,4 +1,4 @@
-import {jStat} from 'jStat';
+import {jStat} from 'jstat';
 
 export type Stat = {
     name: string,
