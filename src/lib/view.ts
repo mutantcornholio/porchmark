@@ -130,7 +130,11 @@ function render() {
     screen.render();
 }
 
-export function shutdown(errorHappened: boolean) {
+export function getTableText() {
+    return tableText ? tableText : "";
+}
+
+export function softShutdown() {
     screen.destroy();
     if (tableText) {
         console.log(tableText);
@@ -139,7 +143,10 @@ export function shutdown(errorHappened: boolean) {
     if (logs.length > 0) {
         console.error(`\nLast logs:\n${logs.join('\n')}`);
     }
+}
 
+export function shutdown(errorHappened: boolean) {
+    softShutdown();
     process.exit(errorHappened ? 1 : 0);
 }
 
