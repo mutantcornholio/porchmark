@@ -20,6 +20,7 @@ export async function runWebdriverCheck(site: string, _: number, options: Option
         const metrics = await remote(wdOptions)
             .init(wdOptions.desiredCapabilities)
             .setViewportSize({width, height})
+            // @ts-ignore FIXME Property 'url' does not exist on type 'never'.
             .url(site)
             .execute(getMetricsFromBrowser);
 
