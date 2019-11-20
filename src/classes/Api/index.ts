@@ -5,7 +5,6 @@ import os from "os";
 import {omit} from "lodash";
 import jStat from 'jstat';
 import joi = require('joi');
-import lighthouse = require("lighthouse");
 import cTable = require("console.table");
 
 import {
@@ -383,6 +382,15 @@ export class Api {
             results? : any // TODO
         },
     ): Promise<{}> {
+        const nodejsMajorVersion = Number(process.version.split('.')[0]);
+
+        if (nodejsMajorVersion < 10) {
+            throw new Error('lighthouse work only with nodejs > 10.13 (class URLShim extends URL <===)');
+        }
+
+        // lighthouse works only with node > 10.13
+        const lighthouse = require("lighthouse");
+
         const results: {
             [index: string]: { // site
                 [index: string]: { // metric
@@ -950,7 +958,7 @@ export class Api {
             throw new Error("only mac and linux platforms supported for wpr tests");
         }
 
-        const wprToolDir = path.resolve(__dirname, '..', '..', 'wpr');
+        const wprToolDir = path.resolve(__dirname, '..', '..', '..', 'wpr');
 
         const config: IWprConfig = {
             ...options,

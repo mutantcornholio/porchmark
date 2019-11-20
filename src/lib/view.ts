@@ -135,7 +135,13 @@ export function getTableText() {
 }
 
 export function softShutdown() {
-    screen.destroy();
+    if (screen) {
+        screen.destroy();
+    }
+
+    // @ts-ignore
+    screen = undefined;
+
     if (tableText) {
         console.log(tableText);
     }

@@ -30,6 +30,9 @@
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
     "porchmark.conf.js",
     "node_modules",

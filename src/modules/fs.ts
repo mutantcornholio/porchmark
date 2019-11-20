@@ -53,7 +53,7 @@ export const writeFile = (filepath: string, data: String | Buffer): Promise<void
 };
 
 export const writeJson = (filepath: string, data: any) => {
-    return writeFile(filepath, JSON.stringify(data));
+    return writeFile(filepath, JSON.stringify(data, null, 2));
 };
 
 export const createWriteStream = fs.createWriteStream;

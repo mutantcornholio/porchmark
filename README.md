@@ -5,13 +5,16 @@ Main purpose is to help testing hypotheses about frontend performance in develop
 
 ![screencast.gif](http://mcornholio-s3.s3.amazonaws.com/porchmark-screencast-3.gif)  
 
-### Installation:
+## Installation:
 What do you think?  
 ```
 npm install -g porchmark
 ```
 
-### Usage:
+## Usage:
+
+## `porchmark compare-realtime <site1> <site2> ...`
+
 #### Puppeteer mode
 porchmark launches several headless chromium browsers on your desktop. Easy start, but there's never enough CPU to get that data fast. It's possible to run porchmark in puppeteer mode on server, but that'll require X.  
 
@@ -61,4 +64,53 @@ module.exports = {
   },
 };
 
+```
+
+## `porchmark compare-releases --config <filepath>`
+
+compare sites using Web Page Replay
+
+Config file: 
+
+```js
+module.exports = {
+  "workDir": "./test-compare", // --------------  workDir
+  "options": {  // ----------------------------- options:
+    "headless": true, // ----------------------- headless chrome or not, default=true
+    "iterations": 11, // ----------------------- iteration count for every WPR archive, default=11
+    "mobile": true, // ------------------------- desktop or mobile (user-agent and viewport changed), default=false
+    "useWpr": true, // ------------------------- use WPR record/replay or not, default=true
+    "cpuThrottling": { // ---------------------- cpu throttling options, default=null
+         "rate": 8 // -------------------------- cpu throttling rate (2, 4, 6 ...)
+    },
+    "networkThrottling": "Regular3G", // ------ network throttling (GPRS, Regular2G, Good2G, Regular3G, Good3G, Regular4G, DSL, WiFi), default=null
+    "cacheEnabled": true, // ------------------ open page with cache or not, default=true
+    "silent": false, // ----------------------- write log to stderr or not, default=false
+    "recordCount": 10, // --------------------- how many WPR archive record for every site url, default=10
+    "cycleCount": 3, // ----------------------- how many WPR archives select from recorded WPR archives, default=1
+    "selectWprMethod": "bestPairsQuantiles", // select wpr methods (bestPairsCloser, bestPairsQuantiles), default=bestPairsQuantiles
+    "warmIterations": 1, // ------------------- how many times open page before compare, default=1
+    "singleProcess": false, // ---------------- run single browser or parallel, default=false
+  },
+  "hosts": [ // ------------------------------- hosts for comparision: only 2 hosts
+    {
+        "name": "craigslist", // -------------- uniq host name
+        "host": "https://craigslist.org" // --- protocol + host
+    },
+    {
+        "name": "wikipedia",
+        "host": "https://wikipedia.org"
+    }
+  ],
+  "urls": [ // ------------------------------- urls for compare
+    {
+      "name": "main", // --------------------- uniq url name
+      "url": "/" // -------------------------- url without hostname
+    }
+  ],
+  "stages": { // ----------------------------- stages (recordWpr and compareMetrics)
+    "recordWpr": true, // -------------------- record wpr before compare, default=true
+    "compareMetrics": true // ---------------- compare metrics, default=true
+  }
+}
 ```

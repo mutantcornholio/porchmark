@@ -140,12 +140,14 @@ export class BrowserApi {
     }
 
     createPage(workDir: string, profile: IPageProfile, site: ISite) {
-        this._logger.debug('create desktop page', site.url);
+        // TODO log over cli.table
+        // this._logger.debug('create desktop page', site.url);
         return new PageApi(this._logger, workDir, this._browser, profile, site);
     }
 
     createMobilePage(workDir: string, profile: IPageProfile, site: ISite) {
-        this._logger.debug('create mobile page', site.url);
+        // TODO log over cli.table
+        // this._logger.debug('create mobile page', site.url);
         return new PageApi(this._logger, workDir, this._browser, {
             ...profile,
             ...BrowserApi.getMobileViewport(),
@@ -187,7 +189,8 @@ export class PageApi {
     }
 
     public async open() {
-        this._logger.debug('open page: ', this._site.url);
+        // TODO log over cli.table
+        // this._logger.debug('open page: ', this._site.url);
 
         this._page = await this._browser.newPage();
 
