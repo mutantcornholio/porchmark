@@ -4,7 +4,7 @@
   "description": "Simple tool to compare browser performance of several sites simultaneously",
   "scripts": {
     "prepare": "tsc && tscpaths -p tsconfig.json -s ./src -o ./dist",
-    "watch": "tsc --watch",
+    "watch": "ln -s ../dist node_modules/@ && tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": "dist/bin/porchmark.js",
