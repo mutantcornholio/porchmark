@@ -7,7 +7,15 @@
         "quotemark": [true, "single"],
         "only-arrow-functions": false,
         "array-type": false,
-        "object-literal-sort-keys": false
+        "object-literal-sort-keys": false,
+        "variable-name": {
+            "options": [
+                "ban-keywords",
+                "check-format",
+                "allow-leading-underscore",
+                "allow-pascal-case"
+            ]
+        }
     },
     "jsRules": {
         "quotemark": [true, "single"],
