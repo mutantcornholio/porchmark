@@ -3,7 +3,7 @@ import {merge} from 'lodash';
 import {Options as WDOptions} from 'webdriverio';
 
 import {viewConsole} from '@/lib/view';
-import {CompareMetricsArgv as Argv} from '@/bin/porchmark';
+import {CompareMetricsArgv as Argv} from '@/bin/porchmark-compare';
 
 
 export type BrowserProfile = {
