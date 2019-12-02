@@ -3,8 +3,13 @@
     "extends": [
         "tslint:recommended"
     ],
-    "jsRules": {},
     "rules": {
+        "quotemark": [true, "single"],
+        "only-arrow-functions": false,
+        "array-type": false,
+        "object-literal-sort-keys": false
+    },
+    "jsRules": {
         "quotemark": [true, "single"],
         "only-arrow-functions": false,
         "array-type": false,
