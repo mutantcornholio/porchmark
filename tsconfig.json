@@ -34,6 +34,7 @@
     "porchmark.conf.js",
     "node_modules",
     "dist",
-    "types"
+    "types",
+    "wpr"
   ]
 }

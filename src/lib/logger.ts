@@ -3,26 +3,24 @@ import * as fs from "fs";
 
 export type Logger = tracer.Tracer.Logger;
 
+let loggerInstance: Logger;
+
 export const createLogger = () => {
     return tracer.colorConsole({
         format: [
-            "{{timestamp}} <{{title}}> {{message}}", //  (in {{file}}:{{line}}) default format
+            "{{timestamp}} <{{title}}> {{message}}",
             {
                 error: "{{timestamp}} <{{title}}> {{message}} (in {{file}}:{{line}})\nCall Stack:\n{{stack}}",
             },
         ],
         dateformat: "HH:MM:ss.L",
-        // inspectOpt: {
-        //     showHidden: false,
-        //     depth: 0,
-        // },
     });
 };
 
 export const createFileLogger = (logfilepath: string) => {
     return tracer.colorConsole({
         format: [
-            "{{timestamp}} <{{title}}> {{message}}", //  (in {{file}}:{{line}}) default format
+            "{{timestamp}} <{{title}}> {{message}}",
             {
                 error: "{{timestamp}} <{{title}}> {{message}} (in {{file}}:{{line}})\nCall Stack:\n{{stack}}",
             },
@@ -34,9 +32,13 @@ export const createFileLogger = (logfilepath: string) => {
                 if (err) throw err;
             });
         }
-        // inspectOpt: {
-        //     showHidden: false,
-        //     depth: 0,
-        // },
     });
 };
+
+export function setLogger(logger: Logger) {
+    loggerInstance = logger;
+}
+
+export function getLogger() {
+    return loggerInstance;
+}
