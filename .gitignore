@@ -69,4 +69,4 @@ typings/
 .idea
 
 # wpr downloaded
-./wpr
+/wpr
