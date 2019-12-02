@@ -1,2 +1,0 @@
-export const WAIT_TIMEOUT = 10000;
-export const SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS = 500;

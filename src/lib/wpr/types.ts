@@ -1,7 +1,5 @@
 import {ChildProcess} from 'child_process';
 
-import {Logger} from '@/lib/logger';
-
 export interface IBaseWprConfig {
     bin: string;
     certFile: string;
@@ -24,6 +22,5 @@ export interface IWprProcess {
     stop(): Promise<void>;
     kill(): Promise<void>;
     onClose(cb: (code: number) => void): void;
+    wait(): Promise<void>;
 }
-
-export type IWprProcessConstructor = new(logger: Logger, config: IWprConfig, archiveFilepath: string) => IWprProcess;
