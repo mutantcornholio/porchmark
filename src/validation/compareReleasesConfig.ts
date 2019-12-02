@@ -1,4 +1,4 @@
-import joi = require('joi');
+import joi = require('@hapi/joi');
 
 import {NETWORK_PRESETS} from "@/classes/Puppeteer";
 
@@ -17,8 +17,8 @@ const schema = joi.object().required().keys({
         cpuThrottling: joi.object().keys({
             rate: joi.number().integer().min(0),
         }),
-        networkThrottling: joi.string().valid(Object.keys(NETWORK_PRESETS)),
-        selectWprMethod: joi.string().valid(['bestPairsQuantiles', 'bestPairsCloser']).default('bestPairsQuantiles'),
+        networkThrottling: joi.string().valid(...Object.keys(NETWORK_PRESETS)),
+        selectWprMethod: joi.string().valid(...['bestPairsQuantiles', 'bestPairsCloser']).default('bestPairsQuantiles'),
         singleProcess: joi.boolean().default(false),
     }),
     hosts: joi.array().required().items(joi.object().required().keys({

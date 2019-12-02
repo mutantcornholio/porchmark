@@ -4,7 +4,7 @@ import os from "os";
 
 import {omit} from "lodash";
 import jStat from 'jstat';
-import joi = require('joi');
+import joi = require('@hapi/joi');
 import cTable = require("console.table");
 
 import {
@@ -681,22 +681,13 @@ export class Api {
         return this.getBestWprPairsMethodQuantiles(wprs, sites, count);
     }
 
-    public validate<T>(data: any, schema: joi.Schema): Promise<T> {
-        return new Promise((resolve, reject) => {
-            const options: joi.ValidationOptions = {
-                abortEarly: false,
-                convert: true,
-            };
-            joi.validate<any, T>(data, schema, options, (err, valid) => {
-                if (err) {
-                    return reject(err);
-                }
+    public async validate<T>(data: any, schema: joi.Schema): Promise<T> {
+        const options: joi.ValidationOptions = {
+            abortEarly: false,
+            convert: true,
+        };
 
-                resolve(valid);
-
-                return valid;
-            });
-        });
+        return schema.validateAsync(data, options);
     }
 
     /**
