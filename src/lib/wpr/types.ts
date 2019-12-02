@@ -5,7 +5,6 @@ export interface IBaseWprConfig {
     certFile: string;
     keyFile: string;
     injectScripts: string;
-    // verbose: boolean;
 }
 
 export interface IWprConfig extends IBaseWprConfig {
@@ -23,4 +22,12 @@ export interface IWprProcess {
     kill(): Promise<void>;
     onClose(cb: (code: number) => void): void;
     wait(): Promise<void>;
+}
+
+export interface IWprProcessOptions {
+    wprArchiveFilepath: string;
+    httpPort: number;
+    httpsPort: number;
+    stdoutFilepath: string;
+    stderrFilepath: string;
 }
