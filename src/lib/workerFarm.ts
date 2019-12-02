@@ -1,27 +1,26 @@
-import {Options} from '@/lib/options';
+import {IOptions} from '@/lib/options';
 import {
     OriginalMetrics,
     watchingMetrics,
-    watchingMetricsRealNames
+    watchingMetricsRealNames,
 } from '@/types';
 
 import {DataProcessor} from '@/lib/dataProcessor';
-import {runPuppeteerCheck} from '@/lib/puppeteer';
-import {runWebdriverCheck} from '@/lib/webdriverio';
-import {viewConsole, shutdown} from '@/lib/view';
 import {sleep} from '@/lib/helpers';
+import {runPuppeteerCheck} from '@/lib/puppeteer';
+import {shutdown, viewConsole} from '@/lib/view';
+import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const workerSet = new Set();
 
-
-export default async function startWorking(sites: string[], dataProcessor: DataProcessor, options: Options) {
+export default async function startWorking(sites: string[], dataProcessor: DataProcessor, options: IOptions) {
     let workersDone = 0;
     const runCheck = (options.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
     // Controls the number of workers, spawns new ones, stops process when everything's done
     async function populateWorkers() {
         while (workersDone < options.workers) {
-            while(options.workers - workersDone > workerSet.size) {
+            while (options.workers - workersDone > workerSet.size) {
                 const nextSiteIndex = dataProcessor.getNextSiteIndex();
 
                 if (nextSiteIndex === null) {
@@ -34,7 +33,7 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
                 workerSet.add(job);
                 dataProcessor.reportTestStart(nextSiteIndex, job);
 
-                const clearJob = () => {workerSet.delete(job)};
+                const clearJob = () => {workerSet.delete(job); };
                 job.then(clearJob, clearJob);
             }
 
@@ -59,10 +58,12 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }
 
-    async function runWorker(siteIndex: number, sites: string[], options: Options): Promise<void> {
+    async function runWorker(siteIndex: number, workerSites: string[], workerOptions: IOptions): Promise<void> {
         const metrics = await Promise.race([
-            sleep(options.timeout).then(() => {throw new Error(`Timeout on site #${siteIndex}, ${sites[siteIndex]}`)}),
-            runCheck(sites[siteIndex], siteIndex, options)
+            sleep(workerOptions.timeout).then(() => {
+                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex]}`);
+            }),
+            runCheck(workerSites[siteIndex], siteIndex, workerOptions),
         ]);
 
         if (metrics !== null) {
@@ -70,5 +71,7 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
         }
     }
 
-    populateWorkers().catch(() => {});
+    populateWorkers().catch(() => {
+        // empty
+    });
 }

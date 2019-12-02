@@ -67,3 +67,6 @@ typings/
 
 # Jetbrains
 .idea
+
+# wpr downloaded
+wpr

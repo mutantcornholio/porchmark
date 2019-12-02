@@ -23,20 +23,19 @@ export function roundToNDigits(value: number, digits: number) {
 }
 
 export function sleep(time: number): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         setTimeout(resolve, time);
     });
 }
 
-export function hasOnlyNumbers(input: (number|null)[]): input is number[] {
-    return !input.some(el => typeof el !== 'number');
+export function hasOnlyNumbers(input: Array<number|null>): input is number[] {
+    return !input.some((el) => typeof el !== 'number');
 }
 
 export function stdoutRect(): [number, number] {
     if (typeof process.stdout.columns !== 'number') {
         throw new Error('process.stdout.columns is not a number');
     }
-
 
     if (typeof process.stdout.rows !== 'number') {
         throw new Error('process.stdout.rows is not a number');

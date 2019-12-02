@@ -1,17 +1,16 @@
-import {remote, Options as WDOptions, DesiredCapabilities} from 'webdriverio';
+import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
-import {Options, BrowserProfile, resolveBrowserProfile} from '@/lib/options';
-import {OriginalMetrics} from '@/types';
+import {IBrowserProfile, IOptions, resolveBrowserProfile} from '@/lib/options';
 import {viewConsole} from '@/lib/view';
+import {OriginalMetrics} from '@/types';
 
-
-export async function runWebdriverCheck(site: string, _: number, options: Options): Promise<(OriginalMetrics|null)> {
+export async function runWebdriverCheck(site: string, _: number, options: IOptions): Promise<(OriginalMetrics|null)> {
     const browserProfile = resolveBrowserProfile(options);
 
     const wdOptions = validateWDOptions(options.webdriverOptions);
 
     if (wdOptions.desiredCapabilities.browserName === 'chrome') {
-        setChromeFlags(wdOptions.desiredCapabilities, browserProfile)
+        setChromeFlags(wdOptions.desiredCapabilities, browserProfile);
     }
 
     const {height, width} = browserProfile;
@@ -45,7 +44,7 @@ type ValidWDOptions = WDOptions & {
     desiredCapabilities: DesiredCapabilities & {
         browserName: string,
         version: string,
-    }
+    },
 };
 
 function validateWDOptions(options: WDOptions): ValidWDOptions {
@@ -61,7 +60,7 @@ function validateWDOptions(options: WDOptions): ValidWDOptions {
     throw new TypeError('invalid desiredCapabilities object!');
 }
 
-function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile: BrowserProfile) {
+function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile: IBrowserProfile) {
     if (!desiredCapabilities.chromeOptions) {
         desiredCapabilities.chromeOptions = {};
     }
@@ -74,4 +73,3 @@ function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile
         desiredCapabilities.chromeOptions.args.push(`user-agent=${browserProfile.userAgent}`);
     }
 }
-

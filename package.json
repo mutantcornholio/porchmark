@@ -7,6 +7,7 @@
     "watch": "tsc-watch --onSuccess 'tscpaths -p tsconfig.json -s ./src -o ./dist'",
     "prepare": "npm run build",
     "install": "node install.js",
+    "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": "dist/bin/porchmark.js",
@@ -43,6 +44,7 @@
     "@types/webdriverio": "^4.13.0",
     "tsc-watch": "^4.0.0",
     "tscpaths": "0.0.6",
+    "tslint": "^5.20.1",
     "typescript": "^3.1.3"
   }
 }

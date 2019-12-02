@@ -1,15 +1,15 @@
 import puppeteer, {Page} from 'puppeteer';
 
-import {Options, resolveBrowserProfile} from '@/lib/options';
-import {OriginalMetrics} from '@/types';
+import {IOptions, resolveBrowserProfile} from '@/lib/options';
 import {viewConsole} from '@/lib/view';
+import {OriginalMetrics} from '@/types';
 
-let bros: puppeteer.Browser[] = [];
+const bros: puppeteer.Browser[] = [];
 
 export async function runPuppeteerCheck(
     site: string,
     siteIndex: number,
-    options: Options,
+    options: IOptions,
 ): Promise<(OriginalMetrics|null)> {
     // Different browsers for different sites can avoid cache and connection reuse between them
     if (!bros[siteIndex]) {

@@ -1,38 +1,37 @@
-import {watchingMetrics} from '@/types';
-import {calculatingStats} from '@/lib/stats';
-import {Options} from '@/lib/options';
 import {indexOfMin, roundToNDigits} from '@/lib/helpers';
+import {IOptions} from '@/lib/options';
+import {calculatingStats} from '@/lib/stats';
+import {watchingMetrics} from '@/types';
 import colors from 'colors/safe';
-
 
 type Sites = string[];
 type RawMetrics = (number)[][][];
-type Stats = (number|null)[][][];
-type Diffs = (number|null)[][][];
-type Highlights = (-1|0|1|null)[][][];
-type PaintedMetrics = (string|null)[][][];
-type PaintedDiffs = (string|null)[][][];
+type Stats = Array<number|null>[][];
+type Diffs = Array<number|null>[][];
+type Highlights = Array<-1|0|1|null>[][];
+type PaintedMetrics = Array<string|null>[][];
+type PaintedDiffs = Array<string|null>[][];
 type Iterations = number[];
 type ActiveTests = number[];
-type StatArrays = (number|null)[][][];
+type StatArrays = Array<number|null>[][];
 
 export class DataProcessor {
-    sites: Sites;
-    options: Options;
+    public sites: Sites;
+    public options: IOptions;
 
-    rawMetrics: RawMetrics;
-    stats: Stats;
-    diffs: Diffs;
-    highlights: Highlights;
-    paintedMetrics: PaintedMetrics;
-    paintedDiffs: PaintedDiffs;
-    iterations: Iterations;
-    activeTests: ActiveTests;
-    calculationCache: {
+    public rawMetrics: RawMetrics;
+    public stats: Stats;
+    public diffs: Diffs;
+    public highlights: Highlights;
+    public paintedMetrics: PaintedMetrics;
+    public paintedDiffs: PaintedDiffs;
+    public iterations: Iterations;
+    public activeTests: ActiveTests;
+    public calculationCache: {
         statArrays: StatArrays,
     };
 
-    constructor(sites: string[], options: Options) {
+    constructor(sites: string[], options: IOptions) {
         this.sites = sites;
         this.options = options;
 
@@ -91,7 +90,7 @@ export class DataProcessor {
     }
 
     // Takes metrics for site
-    registerMetrics(siteIndex: number, metricValues: number[]): void {
+    public registerMetrics(siteIndex: number, metricValues: number[]): void {
         for (const [metricIndex, value] of metricValues.entries()) {
             this.rawMetrics[siteIndex][metricIndex].push(value);
         }
@@ -100,7 +99,7 @@ export class DataProcessor {
     }
 
     // Takes metrics for site
-    reportTestStart(siteIndex: number, job: Promise<void>): void {
+    public reportTestStart(siteIndex: number, job: Promise<void>): void {
         this.activeTests[siteIndex]++;
 
         const jobCallback = () => this.activeTests[siteIndex]--;
@@ -109,7 +108,7 @@ export class DataProcessor {
     }
 
     // Does ALL calculations, returns ALL data
-    calculateResults(): {
+    public calculateResults(): {
         sites: Sites,
         stats: Stats,
         diffs: Diffs,
@@ -128,7 +127,6 @@ export class DataProcessor {
         this.calculatePaintedMetrics();
         this.calculatePaintedDiffs();
 
-
         return {
             sites: this.sites,
             stats: this.stats,
@@ -138,17 +136,17 @@ export class DataProcessor {
             paintedDiffs: this.paintedDiffs,
             iterations: this.iterations,
             activeTests: this.activeTests,
-        }
+        };
     }
 
-    calculateStats() {
+    public calculateStats() {
         // Calculating stats using only minIterations metric slice: every site gets equal chances
         const minIterations = Math.min(...this.iterations);
 
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
             for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
-                let values = this.rawMetrics[siteIndex][metricIndex].slice(0, minIterations);
-                let referenceValues = this.rawMetrics[0][metricIndex].slice(0, minIterations);
+                const values = this.rawMetrics[siteIndex][metricIndex].slice(0, minIterations);
+                const referenceValues = this.rawMetrics[0][metricIndex].slice(0, minIterations);
 
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                     let res;
@@ -167,7 +165,7 @@ export class DataProcessor {
         }
     }
 
-    calculateDiffs() {
+    public calculateDiffs() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
             for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
@@ -193,7 +191,7 @@ export class DataProcessor {
         }
     }
 
-    calculateHighlits() {
+    public calculateHighlits() {
         for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
             for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                 const statArray = this.getStatArray(statIndex, metricIndex);
@@ -210,7 +208,7 @@ export class DataProcessor {
         }
     }
 
-    calculatePaintedMetrics() {
+    public calculatePaintedMetrics() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
             for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
@@ -235,7 +233,7 @@ export class DataProcessor {
         }
     }
 
-    calculatePaintedDiffs() {
+    public calculatePaintedDiffs() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
             for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
@@ -257,12 +255,12 @@ export class DataProcessor {
         }
     }
 
-    getStatArray(statIndex: number, metricIndex: number): (number|null)[] {
+    public getStatArray(statIndex: number, metricIndex: number): Array<number|null> {
         if (this.calculationCache.statArrays[statIndex][metricIndex]) {
             return this.calculationCache.statArrays[statIndex][metricIndex];
         }
 
-        const statArray: (number|null)[] = [];
+        const statArray: Array<number|null> = [];
 
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
             statArray[siteIndex] = this.stats[siteIndex][metricIndex][statIndex];
@@ -273,7 +271,7 @@ export class DataProcessor {
         return statArray;
     }
 
-    resetCache() {
+    public resetCache() {
         this.calculationCache.statArrays = [];
         for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
             this.calculationCache.statArrays[statIndex] = [];
@@ -281,12 +279,12 @@ export class DataProcessor {
     }
 
     // returns iteration count of least successful site
-    getLeastIterations(): number {
+    public getLeastIterations(): number {
         return Math.min(...this.iterations);
     }
 
     // returns index of least successful site, to feed it to workers
-    getNextSiteIndex(): (number|null) {
+    public getNextSiteIndex(): (number|null) {
         if (this.getLeastIterations() >= this.options.maxIterations) {
             return null;
         }
@@ -299,4 +297,3 @@ export class DataProcessor {
         return indexOfMin(totalTests);
     }
 }
-
