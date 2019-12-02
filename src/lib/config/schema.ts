@@ -23,10 +23,10 @@ const AGGREGATIONS = [
 const schema = joi.object().required().keys({
     workDir: joi.string().required(), // ---------------------------------- workDir for WPRs, logs, screenshots, reports
     mode: joi.string().required().valid('puppeteer', 'webdriver'),
+    iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         warmIterations: joi.number().integer().min(0).default(1), // ------ how many warm iterations before compare
-        iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
         useWpr: joi.boolean().default(true), // --------------------------- use WPR or realtime compare
         recordWprCount: joi.number().integer().min(1).default(10), // -------- how many WPR archives collect
         selectWprCount: joi.number().integer().min(1).default(1), // ---------- how many WPR pairs select from recorded
@@ -57,6 +57,7 @@ const schema = joi.object().required().keys({
         })
     }),
     browserProfile: joi.object().keys({
+        mobile: joi.boolean().default(false), // -------------------------- use default mobile userAgent and viewport
         userAgent: joi.string(),
         height: joi.number().integer().min(0),
         width: joi.number().integer().min(0),

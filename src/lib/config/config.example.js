@@ -1,10 +1,10 @@
 module.exports = {
     workDir: `${__dirname}/yandex`,
     mode: 'puppeteer',
+    iterations: 70,
     puppeteerOptions: {
         headless: true,
         warmIterations: 1,
-        iterations: 70,
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
@@ -30,6 +30,7 @@ module.exports = {
         },
     },
     browserProfile: {
+        mobile: false,
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)' +
         ' Chrome/60.0.3112.113 Safari/537.36',
         height: 600,
