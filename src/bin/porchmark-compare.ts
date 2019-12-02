@@ -3,19 +3,19 @@ import 'source-map-support/register';
 
 import program, {Command} from 'commander';
 
-import startWorking from '@/lib/workerFarm';
 import {DataProcessor} from '@/lib/dataProcessor';
+import {resolveOptions} from '@/lib/options';
 import * as view from '@/lib/view';
 import {emergencyShutdown} from '@/lib/view';
-import {resolveOptions} from '@/lib/options';
+import startWorking from '@/lib/workerFarm';
 
-export type CompareMetricsArgv = {
-    iterations?: number,
-    parallel?: number,
-    mobile?: boolean,
-    insecure?: boolean,
-    timeout?: number,
-    config?: string,
+export interface ICompareMetricsArgv {
+    iterations?: number;
+    parallel?: number;
+    mobile?: boolean;
+    insecure?: boolean;
+    timeout?: number;
+    config?: string;
 }
 
 program
@@ -26,9 +26,9 @@ program
     .option('-k, --insecure', 'ignore HTTPS errors')
     .option('-t, --timeout <n>', 'timeout in seconds for each check; defaults to 20s', parseInt)
     .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
-    .action(function (cmd: Command) {
+    .action(function(cmd: Command) {
         const sites: string[] = cmd.args;
-        const options = resolveOptions(cmd as CompareMetricsArgv);
+        const options = resolveOptions(cmd as ICompareMetricsArgv);
 
         const dataProcessor = new DataProcessor(sites, options);
 
@@ -39,4 +39,3 @@ program
         startWorking(sites, dataProcessor, options).catch(emergencyShutdown);
     })
     .parse(process.argv);
-

@@ -1,25 +1,24 @@
-import colors from 'colors/safe';
-import Table, {Cell} from 'cli-table2';
 import blessed, {Widgets} from 'blessed';
+import Table, {Cell} from 'cli-table2';
+import colors from 'colors/safe';
 import {Console} from 'console';
 import {Writable} from 'stream';
 
-import {calculatingStats} from '@/lib/stats';
 import {stdoutRect} from '@/lib/helpers';
+import {calculatingStats} from '@/lib/stats';
 import {watchingMetrics} from '@/types';
 
 let screen: Widgets.Screen;
 let box: Widgets.BoxElement;
-let splashBox: Widgets.BoxElement;
 
 let tableText = '';
-let logs: string[] = [];
-
+const logs: string[] = [];
 
 const splitByColsRegex = new RegExp('.{1,' + process.stdout.columns + '}', 'g');
 class ConsoleStream extends Writable {
-    _write(chunk: string | Buffer, _: any, callback: (error?: Error | null) => void): void {
+    public _write(chunk: string | Buffer, _: any, callback: (error?: Error | null) => void): void {
         if (!screen) {
+            // tslint:disable-next-line no-console
             console.log(chunk.toString());
             callback();
             return;
@@ -49,7 +48,7 @@ const metrCount = watchingMetrics.length * 2;
 const columns = stdoutRect()[1];
 
 // metrCount + 2 is sitename column (which is double)
-const statNameWidth = Math.max.apply(null, calculatingStats.map(stat => stat.name.length)) + 2;
+const statNameWidth = Math.max.apply(null, calculatingStats.map((stat) => stat.name.length)) + 2;
 const metrColumnWidth = Math.floor((columns - statNameWidth - (metrCount + 2)) / (metrCount + 2));
 const maxSitenameWidth = metrColumnWidth * 2 - 2;
 
@@ -61,20 +60,17 @@ function init() {
         box = blessed.box({});
         screen.append(box);
     }
-    if (splashBox) {
-        splashBox.destroy();
-    }
 }
 
 export function renderTable({sites, paintedMetrics, paintedDiffs, iterations, activeTests}: {
     sites: string[],
-    paintedMetrics: (string|null)[][][],
-    paintedDiffs: (string|null)[][][],
+    paintedMetrics: Array<string|null>[][],
+    paintedDiffs: Array<string|null>[][],
     iterations: number[],
     activeTests: number[],
 }) {
     const table = new Table({
-        head: ['', '', ...watchingMetrics.map(metr => ({content: metr, colSpan:2}))],
+        head: ['', '', ...watchingMetrics.map((metr) => ({content: metr, colSpan: 2}))],
         colAligns: ['left', 'right', ...Array(metrCount).fill('right')],
         colWidths: [
             metrColumnWidth * 2,
@@ -92,16 +88,16 @@ export function renderTable({sites, paintedMetrics, paintedDiffs, iterations, ac
             `\nactive tests: ${activeTests[siteIndex]}`;
 
         const statsToDisplay = siteIndex === 0 ?
-            calculatingStats.filter(stat => stat.applicableToReference)
+            calculatingStats.filter((stat) => stat.applicableToReference)
             : calculatingStats
         ;
 
-        const resultRow: Cell[] = [header, statsToDisplay.map(stat => stat.name).join('\n')];
+        const resultRow: Cell[] = [header, statsToDisplay.map((stat) => stat.name).join('\n')];
 
         for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
             resultRow.push(
                 paintedMetrics[siteIndex][metricIndex].join('\n'),
-                paintedDiffs[siteIndex][metricIndex].join('\n')
+                paintedDiffs[siteIndex][metricIndex].join('\n'),
             );
         }
 
@@ -133,10 +129,12 @@ function render() {
 export function shutdown(errorHappened: boolean) {
     screen.destroy();
     if (tableText) {
+        // tslint:disable-next-line no-console
         console.log(tableText);
     }
 
     if (logs.length > 0) {
+        // tslint:disable-next-line no-console
         console.error(`\nLast logs:\n${logs.join('\n')}`);
     }
 
@@ -154,9 +152,9 @@ let spaceInsufficiency: number;
 
 function trimSitenames(sites: string[]): string[] {
     if (!paddedSitenames) {
-        maxLength = Math.max(...sites.map(site => site.length));
+        maxLength = Math.max(...sites.map((site) => site.length));
 
-        paddedSitenames = sites.map(site => {
+        paddedSitenames = sites.map((site) => {
             const pad = Math.ceil((maxLength - site.length) / 2);
 
             return site.padEnd(pad).padStart(pad);
@@ -165,10 +163,10 @@ function trimSitenames(sites: string[]): string[] {
         spaceInsufficiency = maxLength - maxSitenameWidth;
     }
 
-    const shifter = (Date.now()/200) % (spaceInsufficiency * 2.5) - spaceInsufficiency * 0.25;
+    const shifter = (Date.now() / 200) % (spaceInsufficiency * 2.5) - spaceInsufficiency * 0.25;
     let position: number;
     if (shifter < 0) {
-        position = 0
+        position = 0;
     } else if (shifter < spaceInsufficiency) {
         position = shifter;
     } else if (shifter < spaceInsufficiency * 1.25) {
@@ -179,6 +177,5 @@ function trimSitenames(sites: string[]): string[] {
         position = 0;
     }
 
-    return paddedSitenames.map(site => colors.green(site.slice(position)));
+    return paddedSitenames.map((site) => colors.green(site.slice(position)));
 }
-

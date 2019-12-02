@@ -5,9 +5,12 @@ import program from 'commander';
 
 import {shutdown, viewConsole} from '@/lib/view';
 
-const {version} = require('../../package.json');
+// @ts-ignore package.json is not under rootDir
+import pkg = require('../../package.json');
 
-process.on('unhandledRejection', e => viewConsole.error(e));
+const version = pkg.version;
+
+process.on('unhandledRejection', (e) => viewConsole.error(e));
 process.on('SIGINT', () => shutdown(false));
 process.on('SIGTERM', () => shutdown(false));
 
