@@ -54,7 +54,7 @@ const schema = joi.object().required().keys({
         desiredCapabilities: joi.object().keys({
             browserName: joi.string(),
             version: joi.string(),
-        })
+        }),
     }),
     browserProfile: joi.object().keys({
         mobile: joi.boolean().default(false), // -------------------------- use default mobile userAgent and viewport
@@ -70,7 +70,7 @@ const schema = joi.object().required().keys({
                     name: joi.string().required(),
                     url: joi.string().required(),
                 })),
-        })
+        }),
     ),
     stages: joi.object().required().keys({ // ---------------------------- enable/disable compare stages
         recordWpr: joi.boolean().default(true), //
@@ -84,7 +84,7 @@ const schema = joi.object().required().keys({
         joi.object().keys({
             name: joi.string().required(), // metric name, domContentLoadedEventEnd for example
             title: joi.string(),           // metric title for table view, DCL for example
-        })
+        }),
     ),
     metricAggregations: joi.array().min(1).items(  // metric aggregations, applied for every metric
                                                    // you can include or exclude metrics from aggregation
@@ -93,8 +93,8 @@ const schema = joi.object().required().keys({
                 .valid(...AGGREGATIONS),
 
             includeMetrics: joi.array().items(joi.string()),
-            excludeMetrics: joi.array().items(joi.string())
-        })
+            excludeMetrics: joi.array().items(joi.string()),
+        }),
     ),
     hooks: joi.object().keys({                      // hooks
 

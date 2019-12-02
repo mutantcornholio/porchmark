@@ -42,15 +42,15 @@ module.exports = {
             sites: [
                 {name: 'production', url: 'https://yandex.ru'},
                 {name: 'prestable', url: 'https://yandex.ru'},
-            ]
+            ],
         },
         {
             name: 'company',
             sites: [
                 {name: 'production', url: 'https://yandex.ru/company/'},
                 {name: 'prestable', url: 'https://yandex.ru/company/'},
-            ]
-        }
+            ],
+        },
     ],
     stages: {
         recordWpr: true,
