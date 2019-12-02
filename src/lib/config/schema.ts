@@ -22,11 +22,11 @@ const AGGREGATIONS = [
 
 const schema = joi.object().required().keys({
     workDir: joi.string().required(), // ---------------------------------- workDir for WPRs, logs, screenshots, reports
-    options: joi.object().required().keys({ // ----------------------------
+    mode: joi.string().required().valid('puppeteer', 'webdriver'),
+    puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         warmIterations: joi.number().integer().min(0).default(1), // ------ how many warm iterations before compare
         iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
-        mobile: joi.boolean().default(false), // -------------------------- mobile useragent and viewport size
         useWpr: joi.boolean().default(true), // --------------------------- use WPR or realtime compare
         recordWprCount: joi.number().integer().min(1).default(10), // -------- how many WPR archives collect
         selectWprCount: joi.number().integer().min(1).default(1), // ---------- how many WPR pairs select from recorded
@@ -45,6 +45,21 @@ const schema = joi.object().required().keys({
         cssFilesEnabled: joi.boolean().default(true), // ------------------ css files enabled,
                                                       //                    ! slow down comparison speed
                                                       //                    because use puppeteer request interception
+    }),
+    webdriverOptions: joi.object().keys({
+        host: joi.string().required(),
+        port: joi.number().integer().min(0).required(),
+        user: joi.string(),
+        key: joi.string(),
+        desiredCapabilities: joi.object().keys({
+            browserName: joi.string(),
+            version: joi.string(),
+        })
+    }),
+    browserProfile: joi.object().keys({
+        userAgent: joi.string(),
+        height: joi.number().integer().min(0),
+        width: joi.number().integer().min(0),
     }),
     comparisons: joi.array().required().items().items( // ----------------- named comparisons with site urls
         joi.object().required().keys({                 //                   see config.example.js

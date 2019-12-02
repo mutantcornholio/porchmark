@@ -1,10 +1,10 @@
 module.exports = {
     workDir: `${__dirname}/yandex`,
-    options: {
+    mode: 'puppeteer',
+    puppeteerOptions: {
         headless: true,
         warmIterations: 1,
         iterations: 70,
-        mobile: true,
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
@@ -18,6 +18,22 @@ module.exports = {
         imagesEnabled: true,
         javascriptEnabled: true,
         cssFilesEnabled: true,
+    },
+    webdriverOptions: {
+        host: 'your-grid-address.sh',
+        port: 4444,
+        user : 'selenium',
+        key: 'selenium',
+        desiredCapabilities: {
+            'browserName': 'chrome',
+            'version': '65.0',
+        },
+    },
+    browserProfile: {
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)' +
+        ' Chrome/60.0.3112.113 Safari/537.36',
+        height: 600,
+        width: 800,
     },
     comparisons: [
         {
