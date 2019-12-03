@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import {Logger} from '@/lib/logger';
-import {IPageStructureSizes} from '@/lib/puppeteer2/types';
+import {IPageStructureSizes} from '@/lib/puppeteer/types';
 import {ISite} from '@/types';
 
 export enum SelectWprMethods {

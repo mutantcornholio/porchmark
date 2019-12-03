@@ -1,4 +1,4 @@
-import {IPageStructureSizes, IPageStructureSizesHooks} from '@/lib/puppeteer2/types';
+import {IPageStructureSizes, IPageStructureSizesHooks} from '@/lib/puppeteer/types';
 import puppeteer from 'puppeteer';
 // @ts-ignore TODO types
 import rehypeParse = require('rehype-parse');

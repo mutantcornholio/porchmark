@@ -2,7 +2,7 @@ import puppeteer, {Browser} from 'puppeteer';
 
 import {IPuppeteerConfig} from '@/lib/config/types';
 import {getLogger} from '@/lib/logger';
-import {IBrowserLaunchOptions} from '@/lib/puppeteer2/types';
+import {IBrowserLaunchOptions} from '@/lib/puppeteer/types';
 
 const logger = getLogger();
 

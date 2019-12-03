@@ -7,7 +7,7 @@ import {
     DEFAULT_VIEWPORT_HEIGHT, DEFAULT_VIEWPORT_WIDTH,
 } from '@/lib/config/default';
 import {IPuppeteerConfig} from '@/lib/config/types';
-import {IPageProfile} from '@/lib/puppeteer2/types';
+import {IPageProfile} from '@/lib/puppeteer/types';
 import NETWORK_PRESETS from './networkPresets';
 
 export const preparePageProfile = (config: IPuppeteerConfig): IPageProfile => {
