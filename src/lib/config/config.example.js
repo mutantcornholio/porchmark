@@ -86,7 +86,6 @@ module.exports = {
                 throw new Error('no jQuery on page, page incorrect');
             }
         },
-
         async onCollectMetrics(logger, page) {
             const nodesCount = await page.evaluate(() => document.querySelectorAll('*').length);
 
