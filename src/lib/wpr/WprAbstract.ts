@@ -1,17 +1,19 @@
 import {ChildProcess, spawn} from 'child_process';
 import * as fs from 'fs';
 
-import {Logger} from '@/lib/logger';
+import {getLogger} from '@/lib/logger';
+
 import {IWprConfig, IWprProcess} from '@/lib/wpr/types';
 import {checkProcessByPid, sleep} from './helpers';
 
 export type BuildCmd = (wprConfig: IWprConfig, inputWprFilepath: string) => {command: string, args: string[]};
 
+const logger = getLogger();
+
 export const WAIT_TIMEOUT = 10000;
 export const SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS = 500;
 
 export default abstract class WprAbstract implements IWprProcess {
-    protected _logger: Logger;
     protected  _config: IWprConfig;
 
     protected  _process: ChildProcess | null = null;
@@ -20,8 +22,7 @@ export default abstract class WprAbstract implements IWprProcess {
 
     protected abstract _buildCmd: BuildCmd;
 
-    constructor(logger: Logger, config: IWprConfig) {
-        this._logger = logger;
+    constructor(config: IWprConfig) {
         this._config = config;
     }
 
@@ -37,25 +38,25 @@ export default abstract class WprAbstract implements IWprProcess {
 
         const cmd = this._buildCmd(this._config, wprArchiveFilepath);
 
-        this._logger.debug(`starting ${this._name}: ${cmd.command} ${cmd.args.join(' ')}`);
+        logger.debug(`starting ${this._name}: ${cmd.command} ${cmd.args.join(' ')}`);
 
         this._process = spawn(cmd.command, cmd.args);
 
-        this._logger.debug(`started ${this._name} process: pid=${this._process.pid}`);
+        logger.debug(`started ${this._name} process: pid=${this._process.pid}`);
 
         this.process.stdout.pipe(fs.createWriteStream(stdoutFilepath));
         this.process.stderr.pipe(fs.createWriteStream(stderrFilepath));
 
         const sleepTimeout = SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS;
 
-        this._logger.debug(
+        logger.debug(
             `sleep ${sleepTimeout}ms before check ${this._name} process (pid=${this.process.pid}) is alive`,
         );
 
         await sleep(sleepTimeout);
 
         const isAlive = checkProcessByPid(this.process.pid);
-        this._logger.debug(`${this._name} process (pid=${this.process.pid}) isAlive = ${isAlive}`);
+        logger.debug(`${this._name} process (pid=${this.process.pid}) isAlive = ${isAlive}`);
 
         if (!isAlive) {
             throw new Error(
@@ -65,12 +66,12 @@ export default abstract class WprAbstract implements IWprProcess {
     }
 
     public async stop() {
-        this._logger.debug(`stopping ${this._name} process: pid=${this.process.pid}`);
+        logger.debug(`stopping ${this._name} process: pid=${this.process.pid}`);
         return this.process.kill('SIGINT');
     }
 
     public async kill() {
-        this._logger.debug(`killing ${this._name} process: pid=${this.process.pid}`);
+        logger.debug(`killing ${this._name} process: pid=${this.process.pid}`);
         return this.process.kill();
     }
 
@@ -84,7 +85,7 @@ export default abstract class WprAbstract implements IWprProcess {
 
     public wait() {
         return new Promise<void>((resolve, reject) => {
-            this._logger.debug(`wait while ${this._name} process (pid=${this.process.pid}) stopping`);
+            logger.debug(`wait while ${this._name} process (pid=${this.process.pid}) stopping`);
 
             const timeout = setTimeout(() => {
                 reject(new Error(`wait timeout for ${this._name}: ${WAIT_TIMEOUT}ms`));
@@ -97,7 +98,7 @@ export default abstract class WprAbstract implements IWprProcess {
                     return reject(new Error(`${this._name} process (pid=${this.process.pid}) exit with code: ${code}`));
                 }
 
-                this._logger.debug(`${this._name} process (pid=${this.process.pid}) exit with code: 0`);
+                logger.debug(`${this._name} process (pid=${this.process.pid}) exit with code: 0`);
 
                 resolve();
             });
