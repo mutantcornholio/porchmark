@@ -1,9 +1,14 @@
-module.exports = {
+/**
+ *
+ * @type {IConfig}
+ */
+const exampleConfig = {
     workDir: `${__dirname}/yandex`,
     mode: 'puppeteer',
     iterations: 70,
     puppeteerOptions: {
         headless: true,
+        ignoreHTTPSErrors: false,
         warmIterations: 1,
         useWpr: true,
         recordWprCount: 50,
@@ -95,3 +100,5 @@ module.exports = {
         },
     },
 };
+
+module.exports = exampleConfig;

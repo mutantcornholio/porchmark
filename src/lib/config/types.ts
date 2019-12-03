@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import {Logger} from '@/lib/logger';
-import {IPageStructureSizes} from '@/lib/puppeteer/types';
+import {IPageStructureSizes} from '@/lib/puppeteer2/types';
 import {ISite} from '@/types';
 
 export enum SelectWprMethods {
@@ -15,20 +15,21 @@ export type NetworkProfiles = 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'G
 
 export interface IPuppeteerOptions {
   headless: boolean;
+  ignoreHTTPSErrors: boolean;
   warmIterations: number;
   useWpr: boolean;
   recordWprCount: number;
   selectWprCount: number;
   selectWprMethod: SelectWprMethods;
   cacheEnabled: boolean;
-  cpuThrottling?: {
+  cpuThrottling: null | {
     rate: number;
   };
-  networkThrottling?: NetworkProfiles;
-  // singleProcess: boolean; ?
+  networkThrottling: NetworkProfiles | null;
   imagesEnabled: boolean;
   javascriptEnabled: boolean;
   cssFilesEnabled: boolean;
+  pageNavigationTimeout: number;
 }
 
 export interface IWebdriverOptions {
@@ -44,9 +45,9 @@ export interface IWebdriverOptions {
 
 export interface IBrowserProfile {
   mobile: boolean;
-  userAgent?: string;
-  width?: number;
-  height?: number;
+  userAgent: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface IComparison {
@@ -100,4 +101,8 @@ export interface IConfig {
   metrics: IConfigMetric[];
   metricAggregations: IConfigMetricsAggregation[];
   hooks: IConfigHooks;
+}
+
+export interface IPuppeteerConfig extends IConfig {
+  puppeteerOptions: IPuppeteerOptions;
 }

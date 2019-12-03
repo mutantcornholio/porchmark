@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import {NetworkProfiles} from '@/lib/config/types';
 
 export interface IBrowserLaunchOptions {
     headless: boolean;
@@ -10,23 +10,20 @@ export interface IBrowserLaunchOptions {
     imagesEnabled: boolean;
 }
 
-export type NETWORK_PRESET_TYPES =
-    'GPRS' | 'Regular2G' | 'Good2G' |
-    'Regular3G' | 'Good3G' | 'Regular4G' |
-    'DSL' | 'WiFi';
-
 export interface IPageProfile {
     userAgent: string | null;
-    height: number | null;
-    width: number | null;
-    networkThrottling: null | NETWORK_PRESET_TYPES;
+    width: number;
+    height: number;
+
+    cacheEnabled: boolean;
+    javascriptEnabled: boolean;
+    cssFilesEnabled: boolean;
+
     cpuThrottling: null | {
         rate: number;
     };
-    cacheEnabled: null | boolean;
-    waitUntil: puppeteer.LoadEvent;
-    javascriptEnabled: boolean;
-    cssFilesEnabled: boolean;
+    networkThrottling: null | NetworkProfiles;
+    pageNavigationTimeout: number;
 }
 
 export interface IPageStructureSizes {
