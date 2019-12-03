@@ -1,12 +1,8 @@
 import path from 'path';
 
-import {getLogger} from '@/lib/logger';
-
 import {IBaseWprConfig, IWprConfig, IWprProcessOptions} from './types';
 import WprRecord from './WprRecord';
 import WprReplay from './WprReplay';
-
-const logger = getLogger();
 
 const rootDir = path.resolve(__dirname, '../../..');
 const wprToolDir = path.resolve(`${rootDir}/wpr`);
@@ -24,7 +20,7 @@ export const createWprRecordProcess = (options: IWprProcessOptions) => {
         ...options,
     };
 
-    return new WprRecord(logger, config);
+    return new WprRecord(config);
 };
 
 export const createWprReplayProcess = (options: IWprProcessOptions) => {
@@ -33,5 +29,5 @@ export const createWprReplayProcess = (options: IWprProcessOptions) => {
         ...options,
     };
 
-    return new WprReplay(logger, config);
+    return new WprReplay(config);
 };

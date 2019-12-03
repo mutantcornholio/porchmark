@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import {getLogger} from '@/lib/logger';
 
 import {IWprConfig, IWprProcess} from '@/lib/wpr/types';
-import {checkProcessByPid, sleep} from './helpers';
+import {sleep} from './helpers';
 
 export type BuildCmd = (wprConfig: IWprConfig, inputWprFilepath: string) => {command: string, args: string[]};
 
@@ -42,6 +42,17 @@ export default abstract class WprAbstract implements IWprProcess {
 
         this._process = spawn(cmd.command, cmd.args);
 
+        this._process.on('error', (error) => {
+            logger.error(error);
+            throw error;
+        });
+
+        this._process.on('close', (code: number) => {
+            if (code > 0) {
+                throw new Error(`${this._name} process exit with code: ${code}`);
+            }
+        });
+
         logger.debug(`started ${this._name} process: pid=${this._process.pid}`);
 
         this.process.stdout.pipe(fs.createWriteStream(stdoutFilepath));
@@ -49,20 +60,9 @@ export default abstract class WprAbstract implements IWprProcess {
 
         const sleepTimeout = SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS;
 
-        logger.debug(
-            `sleep ${sleepTimeout}ms before check ${this._name} process (pid=${this.process.pid}) is alive`,
-        );
+        logger.debug(`sleep ${sleepTimeout}ms`);
 
         await sleep(sleepTimeout);
-
-        const isAlive = checkProcessByPid(this.process.pid);
-        logger.debug(`${this._name} process (pid=${this.process.pid}) isAlive = ${isAlive}`);
-
-        if (!isAlive) {
-            throw new Error(
-                `${this._name} process (pid=${this.process.pid}) crashed, logs: ${stdoutFilepath}, ${stderrFilepath}`,
-            );
-        }
     }
 
     public async stop() {
