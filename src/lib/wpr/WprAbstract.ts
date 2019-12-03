@@ -4,14 +4,12 @@ import * as fs from 'fs';
 import {getLogger} from '@/lib/logger';
 
 import {IWprConfig, IWprProcess} from '@/lib/wpr/types';
-import {sleep} from './helpers';
 
 export type BuildCmd = (wprConfig: IWprConfig, inputWprFilepath: string) => {command: string, args: string[]};
 
 const logger = getLogger();
 
 export const WAIT_TIMEOUT = 10000;
-export const SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS = 500;
 
 export default abstract class WprAbstract implements IWprProcess {
     protected  _config: IWprConfig;
@@ -57,12 +55,6 @@ export default abstract class WprAbstract implements IWprProcess {
 
         this.process.stdout.pipe(fs.createWriteStream(stdoutFilepath));
         this.process.stderr.pipe(fs.createWriteStream(stderrFilepath));
-
-        const sleepTimeout = SLEEP_TIMEOUT_BEFORE_CHECK_PROCESS;
-
-        logger.debug(`sleep ${sleepTimeout}ms`);
-
-        await sleep(sleepTimeout);
     }
 
     public async stop() {
