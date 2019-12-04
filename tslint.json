@@ -4,7 +4,6 @@
         "tslint:recommended"
     ],
     "rules": {
-        "ter-indent": [true, 4],
         "quotemark": [true, "single"],
         "only-arrow-functions": false,
         "array-type": false,
