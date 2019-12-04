@@ -30,11 +30,8 @@
     "lighthouse": "^5.6.0",
     "lodash": "^4.17.11",
     "puppeteer": "^2.0.0",
-    "rehype-parse": "^6.0.2",
     "source-map-support": "^0.5.16",
     "tracer": "^1.0.1",
-    "traverse": "^0.6.6",
-    "unified": "^8.4.2",
     "webdriverio": "^4.14.0"
   },
   "devDependencies": {
@@ -44,7 +41,6 @@
     "@types/lodash": "^4.14.117",
     "@types/node": "^10.12.0",
     "@types/puppeteer": "^2.0.0",
-    "@types/traverse": "^0.6.32",
     "@types/webdriverio": "^4.13.0",
     "tsc-watch": "^4.0.0",
     "tscpaths": "0.0.9",
