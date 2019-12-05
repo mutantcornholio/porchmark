@@ -38,3 +38,7 @@ export async function runPuppeteerCheck(
         return null;
     }
 }
+
+export function closeBrowsers() {
+    return Promise.all(bros.map((bro) => bro.close()));
+}

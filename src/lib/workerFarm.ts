@@ -7,11 +7,27 @@ import {
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {sleep} from '@/lib/helpers';
-import {runPuppeteerCheck} from '@/lib/puppeteer';
-import {renderTable, shutdown, viewConsole} from '@/lib/view';
+import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
+import {renderTable, viewConsole} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const workerSet = new Set();
+
+let waitForCompleteInterval: NodeJS.Timeout;
+
+function waitForComplete(check: () => boolean): Promise<void> {
+    return new Promise((resolve) => {
+        waitForCompleteInterval = setInterval(() => {
+            if (check()) {
+                resolve();
+            }
+        }, 100);
+    });
+}
+
+function clearWaitForComplete() {
+    clearInterval(waitForCompleteInterval);
+}
 
 export default async function startWorking(comparision: IComparison, dataProcessor: DataProcessor, config: IConfig) {
     let workersDone = 0;
@@ -36,7 +52,7 @@ export default async function startWorking(comparision: IComparison, dataProcess
                 workerSet.add(job);
                 dataProcessor.reportTestStart(nextSiteIndex, job);
 
-                const clearJob = () => {workerSet.delete(job); };
+                const clearJob = () => { workerSet.delete(job); };
                 job.then(clearJob, clearJob);
             }
 
@@ -45,8 +61,6 @@ export default async function startWorking(comparision: IComparison, dataProcess
 
         // render last results
         renderTable(dataProcessor.calculateResults());
-
-        shutdown(false);
     }
 
     function handleWorkerError(error: Error): void {
@@ -80,4 +94,14 @@ export default async function startWorking(comparision: IComparison, dataProcess
     populateWorkers().catch(() => {
         // empty
     });
+
+    await waitForComplete(() => {
+        return workersDone >= config.workers;
+    });
+
+    clearWaitForComplete();
+
+    if (config.mode === 'puppeteer') {
+        await closeBrowsers();
+    }
 }

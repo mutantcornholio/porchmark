@@ -12,7 +12,7 @@ import {resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
 import * as view from '@/lib/view';
-import {emergencyShutdown} from '@/lib/view';
+import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 
 program
@@ -31,10 +31,14 @@ program
 
         const dataProcessor = new DataProcessor(config, comparison);
 
-        setInterval(() => {
+        const renderTableInterval = setInterval(() => {
             view.renderTable(dataProcessor.calculateResults());
         }, 200);
 
-        startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
+        await startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
+
+        clearInterval(renderTableInterval);
+
+        shutdown(false);
     })
     .parse(process.argv);
