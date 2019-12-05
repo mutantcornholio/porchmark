@@ -24,6 +24,8 @@ const schema = joi.object().required().keys({
     workDir: joi.string().required(), // ---------------------------------- workDir for WPRs, logs, screenshots, reports
     mode: joi.string().required().valid('puppeteer', 'webdriver'),
     iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
+    workers: joi.number().integer().min(1).default(1),
+    timeout: joi.number().integer().min(1).default(90),
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         ignoreHTTPSErrors: joi.boolean().default(false),

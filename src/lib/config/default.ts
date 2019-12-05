@@ -9,10 +9,12 @@ export const DEFAULT_VIEWPORT_HEIGHT = 768;
 export const DEFAULT_MOBILE_VIEWPORT_WIDTH = 667;
 export const DEFAULT_MOBILE_VIEWPORT_HEIGHT = 375;
 
-export default {
+export default (): IConfig => ({
     workDir: '',
     mode: 'puppeteer',
     iterations: 70,
+    workers: 1,
+    timeout: 90, // in minutes
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
@@ -62,4 +64,4 @@ export default {
         {name: 'q95'},
     ],
     hooks: {},
-} as IConfig;
+});
