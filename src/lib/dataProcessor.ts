@@ -1,5 +1,5 @@
+import {IComparison, IConfig} from '@/lib/config';
 import {indexOfMin, roundToNDigits} from '@/lib/helpers';
-import {IOptions} from '@/lib/options';
 import {calculatingStats} from '@/lib/stats';
 import {watchingMetrics} from '@/types';
 import colors from 'colors/safe';
@@ -17,7 +17,8 @@ type StatArrays = Array<number|null>[][];
 
 export class DataProcessor {
     public sites: Sites;
-    public options: IOptions;
+    public comparision: IComparison;
+    public config: IConfig;
 
     public rawMetrics: RawMetrics;
     public stats: Stats;
@@ -31,9 +32,10 @@ export class DataProcessor {
         statArrays: StatArrays,
     };
 
-    constructor(sites: string[], options: IOptions) {
-        this.sites = sites;
-        this.options = options;
+    constructor(config: IConfig, comparision: IComparison) {
+        this.sites = comparision.sites.map((site) => site.url);
+        this.comparision = comparision;
+        this.config = config;
 
         // These are growing with each sample
         // this.rawMetrics[siteIndex][metricIndex] is array of all metric samples
@@ -285,7 +287,7 @@ export class DataProcessor {
 
     // returns index of least successful site, to feed it to workers
     public getNextSiteIndex(): (number|null) {
-        if (this.getLeastIterations() >= this.options.maxIterations) {
+        if (this.getLeastIterations() >= this.config.iterations) {
             return null;
         }
 

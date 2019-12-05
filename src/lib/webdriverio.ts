@@ -1,13 +1,14 @@
 import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
-import {IBrowserProfile, IOptions, resolveBrowserProfile} from '@/lib/options';
+// import {IBrowserProfile, IOptions, resolveBrowserProfile} from '@/lib/options';
+import {IBrowserProfile, IConfig} from '@/lib/config';
 import {viewConsole} from '@/lib/view';
 import {OriginalMetrics} from '@/types';
 
-export async function runWebdriverCheck(site: string, _: number, options: IOptions): Promise<(OriginalMetrics|null)> {
-    const browserProfile = resolveBrowserProfile(options);
+export async function runWebdriverCheck(site: string, _: number, config: IConfig): Promise<(OriginalMetrics|null)> {
+    const browserProfile = config.browserProfile;
 
-    const wdOptions = validateWDOptions(options.webdriverOptions);
+    const wdOptions = validateWDOptions(config.webdriverOptions);
 
     if (wdOptions.desiredCapabilities.browserName === 'chrome') {
         setChromeFlags(wdOptions.desiredCapabilities, browserProfile);

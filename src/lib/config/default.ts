@@ -14,7 +14,7 @@ export default (): IConfig => ({
     mode: 'puppeteer',
     iterations: 70,
     workers: 1,
-    timeout: 90, // in minutes
+    pageTimeout: 20, // in seconds
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
@@ -30,6 +30,16 @@ export default (): IConfig => ({
         cpuThrottling: null,
         networkThrottling: null,
         pageNavigationTimeout: 60000,
+    },
+    webdriverOptions: {
+        host: 'localhost',
+        port: 4444,
+        user : '',
+        key: '',
+        desiredCapabilities: {
+            browserName: 'chrome',
+            version: '65.0',
+        },
     },
     browserProfile: {
         mobile: false,

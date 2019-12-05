@@ -3,7 +3,7 @@ import * as tracer from 'tracer';
 
 export type Logger = tracer.Tracer.Logger;
 
-let loggerInstance: Logger;
+export let loggerInstance: Logger;
 
 export const createLogger = () => {
     return tracer.colorConsole({
@@ -40,5 +40,8 @@ export function setLogger(logger: Logger) {
 }
 
 export function getLogger() {
+    if (!loggerInstance) {
+        throw new Error('no global logger');
+    }
     return loggerInstance;
 }

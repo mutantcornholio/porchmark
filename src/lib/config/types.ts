@@ -46,8 +46,8 @@ export interface IWebdriverOptions {
 export interface IBrowserProfile {
   mobile: boolean;
   userAgent: string | null;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface IComparison {
@@ -90,9 +90,9 @@ export interface IConfig {
   mode: 'puppeteer' | 'webdriver';
   iterations: number;
   workers: number;
-  timeout: number;
+  pageTimeout: number;
   puppeteerOptions: IPuppeteerOptions;
-  webdriverOptions?: IWebdriverOptions;
+  webdriverOptions: IWebdriverOptions;
   browserProfile: IBrowserProfile;
   comparisons: IComparison[];
   stages: {

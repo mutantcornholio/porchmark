@@ -1,6 +1,6 @@
 import puppeteer, {Page} from 'puppeteer';
 
-import {IOptions, resolveBrowserProfile} from '@/lib/options';
+import {IConfig} from '@/lib/config';
 import {viewConsole} from '@/lib/view';
 import {OriginalMetrics} from '@/types';
 
@@ -9,17 +9,19 @@ const bros: puppeteer.Browser[] = [];
 export async function runPuppeteerCheck(
     site: string,
     siteIndex: number,
-    options: IOptions,
+    config: IConfig,
 ): Promise<(OriginalMetrics|null)> {
+    const options = config.puppeteerOptions;
+
     // Different browsers for different sites can avoid cache and connection reuse between them
     if (!bros[siteIndex]) {
         bros[siteIndex] = await puppeteer.launch({
-            headless: true,
-            ignoreHTTPSErrors: options.insecure,
+            headless: options.headless,
+            ignoreHTTPSErrors: options.ignoreHTTPSErrors,
         });
     }
 
-    const browserProfile = resolveBrowserProfile(options);
+    const browserProfile = config.browserProfile; // resolveBrowserProfile(options);
 
     const bro = bros[siteIndex];
 

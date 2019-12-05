@@ -1,4 +1,5 @@
 export * from './types';
+export * from './commanderArgv';
 
 import joi from '@hapi/joi';
 import {defaultsDeep} from 'lodash';

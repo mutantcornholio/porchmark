@@ -48,5 +48,4 @@ export type SiteName = string;
 export interface ISite {
     name: SiteName;
     url: string;
-    mobile?: boolean;
 }
