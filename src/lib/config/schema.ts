@@ -71,7 +71,7 @@ const schema = joi.object().required().keys({
     comparisons: joi.array().required().min(1).items( // ----------------- named comparisons with site urls
         joi.object().required().keys({                 //                   see config.example.js
             name: joi.string().required(),
-            sites: joi.array().required().min(2).max(2)
+            sites: joi.array().required().min(1)
                 .items(joi.object().required().keys({
                     name: joi.string().required(),
                     url: joi.string().required(),

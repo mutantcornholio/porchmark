@@ -1,8 +1,12 @@
-import puppeteer, {Page} from 'puppeteer';
+import puppeteer from 'puppeteer';
 
 import {IConfig} from '@/lib/config';
 import {viewConsole} from '@/lib/view';
 import {OriginalMetrics} from '@/types';
+
+import {launchBrowser, prepareBrowserLaunchOptions} from './browser';
+import {getPageMetrics} from './metrics';
+import {createPage, preparePageProfile} from './page';
 
 const bros: puppeteer.Browser[] = [];
 
@@ -11,35 +15,20 @@ export async function runPuppeteerCheck(
     siteIndex: number,
     config: IConfig,
 ): Promise<(OriginalMetrics|null)> {
-    const options = config.puppeteerOptions;
-
     // Different browsers for different sites can avoid cache and connection reuse between them
     if (!bros[siteIndex]) {
-        bros[siteIndex] = await puppeteer.launch({
-            headless: options.headless,
-            ignoreHTTPSErrors: options.ignoreHTTPSErrors,
-        });
+        bros[siteIndex] = await launchBrowser(prepareBrowserLaunchOptions(config));
     }
-
-    const browserProfile = config.browserProfile; // resolveBrowserProfile(options);
 
     const bro = bros[siteIndex];
 
     try {
-        const page = await bro.newPage();
-
-        if (browserProfile.userAgent) {
-            await page.setUserAgent(browserProfile.userAgent);
-        }
-
-        await page.setViewport({
-            width: browserProfile.width,
-            height: browserProfile.height,
-        });
+        const pageProfile = preparePageProfile(config);
+        const page = await createPage(bro, pageProfile);
 
         await page.goto(site, {waitUntil: 'networkidle0'});
 
-        const metrics = await getMetrics(page);
+        const metrics = await getPageMetrics(page);
         await page.close();
         return metrics;
     } catch (e) {
@@ -48,15 +37,4 @@ export async function runPuppeteerCheck(
         delete bros[siteIndex];
         return null;
     }
-}
-
-async function getMetrics(page: Page): Promise<OriginalMetrics> {
-    return page.evaluate(() => {
-        const timings = performance.getEntriesByType('navigation')[0].toJSON();
-        const paintEntries = performance.getEntriesByType('paint');
-        for (const entry of paintEntries) {
-            timings[entry.name] = entry.startTime;
-        }
-        return timings;
-    });
 }

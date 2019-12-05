@@ -1,10 +1,7 @@
 import puppeteer, {Browser} from 'puppeteer';
 
 import {IPuppeteerConfig} from '@/lib/config/types';
-import {getLogger} from '@/lib/logger';
 import {IBrowserLaunchOptions} from '@/lib/puppeteer/types';
-
-const logger = getLogger();
 
 export const prepareBrowserLaunchOptions = (config: IPuppeteerConfig): IBrowserLaunchOptions => {
     const {headless, ignoreHTTPSErrors, imagesEnabled} = config.puppeteerOptions;
@@ -36,8 +33,6 @@ export const launchBrowser = (options: IBrowserLaunchOptions): Promise<Browser> 
         ignoreHTTPSErrors: options.ignoreHTTPSErrors,
         args,
     };
-
-    logger.debug('starting browser', launchOptions);
 
     return puppeteer.launch(launchOptions);
 };
