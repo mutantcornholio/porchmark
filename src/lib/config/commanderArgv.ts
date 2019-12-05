@@ -74,6 +74,10 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
 
     addOptsFromArgv(config, commanderArgv as ICompareMetricsArgv);
     addSitesFromArgv(config, commanderArgv);
+
+    // convert seconds to ms
+    config.pageTimeout = config.pageTimeout * 1000;
+
     initBrowserProfile(config);
 
     try {

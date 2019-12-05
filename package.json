@@ -9,6 +9,7 @@
     "prepare": "npm run build",
     "install": "node install.js",
     "lint": "tslint --project .",
+    "ci:check": "npm run build && npm  run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": "dist/bin/porchmark.js",

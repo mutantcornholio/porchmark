@@ -8,7 +8,7 @@ import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {sleep} from '@/lib/helpers';
 import {runPuppeteerCheck} from '@/lib/puppeteer';
-import {shutdown, viewConsole} from '@/lib/view';
+import {renderTable, shutdown, viewConsole} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const workerSet = new Set();
@@ -43,6 +43,9 @@ export default async function startWorking(comparision: IComparison, dataProcess
             await Promise.race(Array.prototype.slice.call(workerSet.entries()).concat(sleep(100)));
         }
 
+        // render last results
+        renderTable(dataProcessor.calculateResults());
+
         shutdown(false);
     }
 
@@ -63,7 +66,7 @@ export default async function startWorking(comparision: IComparison, dataProcess
 
     async function runWorker(siteIndex: number, workerSites: string[], workerConfig: IConfig): Promise<void> {
         const metrics = await Promise.race([
-            sleep(workerConfig.pageTimeout * 1000).then(() => {
+            sleep(workerConfig.pageTimeout).then(() => {
                 throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex]}`);
             }),
             runCheck(workerSites[siteIndex], siteIndex, workerConfig),
