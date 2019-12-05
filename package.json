@@ -3,8 +3,9 @@
   "version": "2.0.0-beta.1",
   "description": "Simple tool to compare browser performance of several sites simultaneously",
   "scripts": {
-    "build": "tsc && tscpaths -p tsconfig.json -s ./src -o ./dist",
-    "watch": "tsc-watch --onSuccess 'tscpaths -p tsconfig.json -s ./src -o ./dist'",
+    "build": "tsc && npm run updateTscPaths",
+    "watch": "tsc-watch --onSuccess 'npm run updateTscPaths' --onFailure 'npm run updateTscPaths'",
+    "updateTscPaths": "tscpaths -p tsconfig.json -s ./src -o ./dist",
     "prepare": "npm run build",
     "install": "node install.js",
     "lint": "tslint --project .",
