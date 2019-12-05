@@ -14,6 +14,7 @@ import {DataProcessor} from '@/lib/dataProcessor';
 import * as view from '@/lib/view';
 import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
+import {recordWprArchives} from '@/lib/wpr';
 
 program
     .description('realtime compare websites')
@@ -29,16 +30,26 @@ program
         // take only first comparision, TODO iterate over all comparisions
         const comparison = config.comparisons[0];
 
-        const dataProcessor = new DataProcessor(config, comparison);
+        if (
+            config.mode === 'puppeteer' &&
+            config.puppeteerOptions.useWpr &&
+            config.stages.recordWpr
+        ) {
+            await recordWprArchives(comparison, config);
+        }
 
-        const renderTableInterval = setInterval(() => {
-            view.renderTable(dataProcessor.calculateResults());
-        }, 200);
+        if (config.stages.compareMetrics) {
+            const dataProcessor = new DataProcessor(config, comparison);
 
-        await startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
+            const renderTableInterval = setInterval(() => {
+                view.renderTable(dataProcessor.calculateResults());
+            }, 200);
 
-        clearInterval(renderTableInterval);
+            await startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
 
-        shutdown(false);
+            clearInterval(renderTableInterval);
+
+            shutdown(false);
+        }
     })
     .parse(process.argv);

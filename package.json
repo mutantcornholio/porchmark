@@ -9,7 +9,7 @@
     "prepare": "npm run build",
     "install": "node install.js",
     "lint": "tslint --project .",
-    "ci:check": "npm run build && npm  run lint",
+    "ci:check": "npm run build && npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": "dist/bin/porchmark.js",
@@ -39,6 +39,7 @@
   "devDependencies": {
     "@types/blessed": "^0.1.10",
     "@types/cli-table2": "^0.2.1",
+    "@types/fs-extra": "^8.0.1",
     "@types/hapi__joi": "^16.0.3",
     "@types/lodash": "^4.14.117",
     "@types/node": "^10.12.0",
