@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 
+import path from 'path';
+
 import program, {Command} from 'commander';
 
-import {createLogger, setLogger} from '@/lib/logger';
+import {createLogger, setLogfilePath, setLogger, setLogToConsole} from '@/lib/logger';
 
 // setLogger should be before resolveConfig import
 const logger = createLogger();
@@ -27,6 +29,10 @@ program
     .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
+
+        const logfilePath = path.resolve(config.workDir, 'porchmark.log');
+
+        setLogfilePath(logfilePath);
 
         // take only first comparision, TODO iterate over all comparisons
         const comparison = config.comparisons[0];
@@ -59,7 +65,11 @@ program
                 view.renderTable(dataProcessor.calculateResults());
             }, 200);
 
+            setLogToConsole(false);
+
             await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
+
+            setLogToConsole(true);
 
             clearInterval(renderTableInterval);
 
