@@ -14,10 +14,13 @@ setLogger(logger);
 import {resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
+import {getComparisonDir} from '@/lib/filepath';
 import * as view from '@/lib/view';
 import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
+import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
+import {ISelectedWprArchives} from '@/lib/wpr/types';
 
 program
     .description('realtime compare websites')
@@ -54,17 +57,24 @@ program
         }
 
         if (config.stages.compareMetrics) {
-            if (config.mode === 'puppeteer' && config.puppeteerOptions.useWpr) {
-                // TODO select wpr pairs here
-                comparison.wprArchives = comparison.sites.map((site) => {
-                    return {
-                        siteName: site.name,
-                        wprArchiveId: 0,
-                        size: 0,
-                    };
-                });
+            let selectedWprArchives: ISelectedWprArchives[] = [];
+            let cycleCount = 1;
 
-                logger.info(`start comparision with wpr archives`, comparison.wprArchives);
+            const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
+
+            if (withWpr) {
+                const wprArchives = await getWprArchives(
+                    getComparisonDir(config.workDir, comparison),
+                    comparison.sites,
+                );
+
+                selectedWprArchives = await selectWprArchives(
+                    config,
+                    wprArchives,
+                    comparison.sites,
+                );
+
+                cycleCount = selectedWprArchives.length;
             }
 
             const dataProcessor = new DataProcessor(config, comparison);
@@ -74,6 +84,22 @@ program
             }, 200);
 
             await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
+
+            for (let compareId = 0; compareId < cycleCount; compareId++) {
+                logger.info(`start comparison name=${comparison.name}, id=${compareId}`);
+
+                if (withWpr) {
+                    comparison.wprArchives = selectedWprArchives[compareId].wprArchives;
+                    logger.info(`start comparison with wpr archives`, comparison.wprArchives);
+                }
+
+                try {
+                    await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
+                    dataProcessor.increaseIterationCount();
+                } catch (error) {
+                    logger.error(error);
+                }
+            }
 
             clearInterval(renderTableInterval);
 

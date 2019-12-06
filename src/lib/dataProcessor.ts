@@ -19,6 +19,7 @@ export class DataProcessor {
     public sites: Sites;
     public comparision: IComparison;
     public config: IConfig;
+    public iterationCount: number;
 
     public rawMetrics: RawMetrics;
     public stats: Stats;
@@ -36,6 +37,7 @@ export class DataProcessor {
         this.sites = comparision.sites.map((site) => site.url);
         this.comparision = comparision;
         this.config = config;
+        this.iterationCount = this.config.iterations;
 
         // These are growing with each sample
         // this.rawMetrics[siteIndex][metricIndex] is array of all metric samples
@@ -287,7 +289,7 @@ export class DataProcessor {
 
     // returns index of least successful site, to feed it to workers
     public getNextSiteIndex(): (number|null) {
-        if (this.getLeastIterations() >= this.config.iterations) {
+        if (this.getLeastIterations() >= this.iterationCount) {
             return null;
         }
 
@@ -297,5 +299,9 @@ export class DataProcessor {
         }
 
         return indexOfMin(totalTests);
+    }
+
+    public increaseIterationCount() {
+        this.iterationCount = this.iterationCount + this.config.iterations;
     }
 }

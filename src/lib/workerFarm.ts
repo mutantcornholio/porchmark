@@ -7,9 +7,12 @@ import {
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {sleep} from '@/lib/helpers';
+import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
 import {renderTable, viewConsole} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
+
+const logger = getLogger();
 
 const workerSet = new Set();
 
@@ -36,6 +39,8 @@ export default async function startWorking(
     config: IConfig,
 ) {
     let workersDone = 0;
+
+    logger.info(`[startWorking] start: comparison=${comparision.name} id=${compareId}`);
 
     const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
@@ -64,9 +69,14 @@ export default async function startWorking(
 
         // render last results
         renderTable(dataProcessor.calculateResults());
+
+        logger.info(
+            `[startWorking] complete: comparison=${comparision.name}, id=${compareId}, workersDone=${workersDone}`,
+        );
     }
 
     function handleWorkerError(error: Error): void {
+        logger.error(error);
         viewConsole.error(error);
     }
 
@@ -104,8 +114,8 @@ export default async function startWorking(
         }
     }
 
-    populateWorkers().catch(() => {
-        // empty
+    populateWorkers().catch((error) => {
+        logger.error(error);
     });
 
     await waitForComplete(() => {
