@@ -11,16 +11,83 @@ import {createLogger, setLogfilePath, setLogger} from '@/lib/logger';
 const logger = createLogger();
 setLogger(logger);
 
-import {resolveConfig} from '@/lib/config';
+import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
 import {getComparisonDir} from '@/lib/filepath';
 import * as view from '@/lib/view';
-import {emergencyShutdown, shutdown} from '@/lib/view';
+import {destroyScreenAndLogResults, emergencyShutdown, shutdown} from '@/lib/view';
+import {viewConsole} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
 import {ISelectedWprArchives} from '@/lib/wpr/types';
+
+process.on('unhandledRejection', (e) => {
+    logger.error(e);
+    viewConsole.error(e);
+    process.exit(1);
+});
+process.on('SIGINT', () => shutdown(false));
+process.on('SIGTERM', () => shutdown(false));
+
+async function startComparison(config: IConfig, comparison: IComparison) {
+    if (
+        config.mode === 'puppeteer' &&
+        config.puppeteerOptions.useWpr &&
+        config.stages.recordWpr
+    ) {
+        await recordWprArchives(comparison, config);
+    }
+
+    if (config.stages.compareMetrics) {
+        let selectedWprArchives: ISelectedWprArchives[] = [];
+        let cycleCount = 1;
+
+        const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
+
+        if (withWpr) {
+            const wprArchives = await getWprArchives(
+                getComparisonDir(config.workDir, comparison),
+                comparison.sites,
+            );
+
+            selectedWprArchives = await selectWprArchives(
+                config,
+                wprArchives,
+                comparison.sites,
+            );
+
+            cycleCount = selectedWprArchives.length;
+        }
+
+        const dataProcessor = new DataProcessor(config, comparison);
+
+        const renderTableInterval = setInterval(() => {
+            view.renderTable(dataProcessor.calculateResults());
+        }, 200);
+
+        for (let compareId = 0; compareId < cycleCount; compareId++) {
+            logger.info(`start comparison name=${comparison.name}, id=${compareId}`);
+
+            if (withWpr) {
+                comparison.wprArchives = selectedWprArchives[compareId].wprArchives;
+                logger.info(`start comparison with wpr archives`, comparison.wprArchives);
+            }
+
+            try {
+                await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
+                dataProcessor.increaseIterationCount();
+            } catch (error) {
+                logger.error(error);
+            }
+        }
+
+        clearInterval(renderTableInterval);
+
+        destroyScreenAndLogResults();
+    }
+}
 
 program
     .description('realtime compare websites')
@@ -45,65 +112,10 @@ program
 
         setLogfilePath(logfilePath);
 
-        // take only first comparision, TODO iterate over all comparisons
-        const comparison = config.comparisons[0];
-
-        if (
-            config.mode === 'puppeteer' &&
-            config.puppeteerOptions.useWpr &&
-            config.stages.recordWpr
-        ) {
-            await recordWprArchives(comparison, config);
+        for (const comparison of config.comparisons) {
+            await startComparison(config, comparison);
         }
 
-        if (config.stages.compareMetrics) {
-            let selectedWprArchives: ISelectedWprArchives[] = [];
-            let cycleCount = 1;
-
-            const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
-
-            if (withWpr) {
-                const wprArchives = await getWprArchives(
-                    getComparisonDir(config.workDir, comparison),
-                    comparison.sites,
-                );
-
-                selectedWprArchives = await selectWprArchives(
-                    config,
-                    wprArchives,
-                    comparison.sites,
-                );
-
-                cycleCount = selectedWprArchives.length;
-            }
-
-            const dataProcessor = new DataProcessor(config, comparison);
-
-            const renderTableInterval = setInterval(() => {
-                view.renderTable(dataProcessor.calculateResults());
-            }, 200);
-
-            await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
-
-            for (let compareId = 0; compareId < cycleCount; compareId++) {
-                logger.info(`start comparison name=${comparison.name}, id=${compareId}`);
-
-                if (withWpr) {
-                    comparison.wprArchives = selectedWprArchives[compareId].wprArchives;
-                    logger.info(`start comparison with wpr archives`, comparison.wprArchives);
-                }
-
-                try {
-                    await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
-                    dataProcessor.increaseIterationCount();
-                } catch (error) {
-                    logger.error(error);
-                }
-            }
-
-            clearInterval(renderTableInterval);
-
-            shutdown(false);
-        }
+        shutdown(false);
     })
     .parse(process.argv);
