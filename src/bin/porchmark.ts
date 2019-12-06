@@ -19,6 +19,7 @@ const version = pkg.version;
 process.on('unhandledRejection', (e) => {
     logger.error(e);
     viewConsole.error(e);
+    process.exit(1);
 });
 process.on('SIGINT', () => shutdown(false));
 process.on('SIGTERM', () => shutdown(false));
