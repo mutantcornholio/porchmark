@@ -5,8 +5,9 @@ import program from 'commander';
 
 import {shutdown, viewConsole} from '@/lib/view';
 
-// @ts-ignore package.json is not under rootDir
-import pkg = require('../../package.json');
+// if import, tsc ignores rootDir and transpile package.json and src to dist
+// tslint:disable-next-line no-var-requires
+const pkg = require('@/../package.json');
 
 const version = pkg.version;
 

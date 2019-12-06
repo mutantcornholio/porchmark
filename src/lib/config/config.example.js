@@ -1,9 +1,14 @@
-module.exports = {
+/**
+ *
+ * @type {IConfig}
+ */
+const exampleConfig = {
     workDir: `${__dirname}/yandex`,
     mode: 'puppeteer',
     iterations: 70,
     puppeteerOptions: {
         headless: true,
+        ignoreHTTPSErrors: false,
         warmIterations: 1,
         useWpr: true,
         recordWprCount: 50,
@@ -86,7 +91,6 @@ module.exports = {
                 throw new Error('no jQuery on page, page incorrect');
             }
         },
-
         async onCollectMetrics(logger, page) {
             const nodesCount = await page.evaluate(() => document.querySelectorAll('*').length);
 
@@ -96,3 +100,5 @@ module.exports = {
         },
     },
 };
+
+module.exports = exampleConfig;

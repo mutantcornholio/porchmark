@@ -26,6 +26,7 @@ const schema = joi.object().required().keys({
     iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
+        ignoreHTTPSErrors: joi.boolean().default(false),
         warmIterations: joi.number().integer().min(0).default(1), // ------ how many warm iterations before compare
         useWpr: joi.boolean().default(true), // --------------------------- use WPR or realtime compare
         recordWprCount: joi.number().integer().min(1).default(10), // -------- how many WPR archives collect
@@ -45,6 +46,7 @@ const schema = joi.object().required().keys({
         cssFilesEnabled: joi.boolean().default(true), // ------------------ css files enabled,
                                                       //                    ! slow down comparison speed
                                                       //                    because use puppeteer request interception
+        pageNavigationTimeout: joi.number().integer().min(0).default(60000),
     }),
     webdriverOptions: joi.object().keys({
         host: joi.string().required(),
