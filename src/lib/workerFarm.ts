@@ -29,10 +29,13 @@ function clearWaitForComplete() {
     clearInterval(waitForCompleteInterval);
 }
 
-export default async function startWorking(comparision: IComparison, dataProcessor: DataProcessor, config: IConfig) {
+export default async function startWorking(
+    compareId: number,
+    comparision: IComparison,
+    dataProcessor: DataProcessor,
+    config: IConfig,
+) {
     let workersDone = 0;
-
-    const sites = comparision.sites.map((site) => site.url);
 
     const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
@@ -47,7 +50,7 @@ export default async function startWorking(comparision: IComparison, dataProcess
                     continue;
                 }
 
-                const job = runWorker(nextSiteIndex, sites, config).catch(handleWorkerError);
+                const job = runWorker(nextSiteIndex, comparision, config).catch(handleWorkerError);
 
                 workerSet.add(job);
                 dataProcessor.reportTestStart(nextSiteIndex, job);
@@ -78,12 +81,22 @@ export default async function startWorking(comparision: IComparison, dataProcess
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }
 
-    async function runWorker(siteIndex: number, workerSites: string[], workerConfig: IConfig): Promise<void> {
+    async function runWorker(
+        siteIndex: number,
+        workerComparision: IComparison,
+        workerConfig: IConfig,
+    ): Promise<void> {
+        const workerSites = workerComparision.sites;
+
         const metrics = await Promise.race([
             sleep(workerConfig.pageTimeout).then(() => {
-                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex]}`);
+                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex].url}`);
             }),
-            runCheck(workerSites[siteIndex], siteIndex, workerConfig),
+            runCheck(workerSites[siteIndex], siteIndex, {
+                comparison: workerComparision,
+                config: workerConfig,
+                compareId,
+            }),
         ]);
 
         if (metrics !== null) {

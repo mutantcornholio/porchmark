@@ -6,7 +6,8 @@ import program, {Command} from 'commander';
 import {createLogger, setLogger} from '@/lib/logger';
 
 // setLogger should be before resolveConfig import
-setLogger(createLogger());
+const logger = createLogger();
+setLogger(logger);
 
 import {resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
@@ -27,7 +28,7 @@ program
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
 
-        // take only first comparision, TODO iterate over all comparisions
+        // take only first comparision, TODO iterate over all comparisons
         const comparison = config.comparisons[0];
 
         if (
@@ -39,13 +40,26 @@ program
         }
 
         if (config.stages.compareMetrics) {
+            if (config.mode === 'puppeteer' && config.puppeteerOptions.useWpr) {
+                // TODO select wpr pairs here
+                comparison.wprArchives = comparison.sites.map((site) => {
+                    return {
+                        siteName: site.name,
+                        wprArchiveId: 0,
+                        size: 0,
+                    };
+                });
+
+                logger.info(`start comparision with wpr archives`, comparison.wprArchives);
+            }
+
             const dataProcessor = new DataProcessor(config, comparison);
 
             const renderTableInterval = setInterval(() => {
                 view.renderTable(dataProcessor.calculateResults());
             }, 200);
 
-            await startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
+            await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
 
             clearInterval(renderTableInterval);
 

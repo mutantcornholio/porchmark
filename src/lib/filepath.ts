@@ -1,8 +1,13 @@
+import {IComparison} from '@/lib/config';
 import {ISite} from '@/types';
 import * as path from 'path';
 
 export const getConfigFilepath = (workDir: string, name: string) => {
     return path.resolve(workDir, `${name}.config.json`);
+};
+
+export const getComparisonDir = (workDir: string, comparison: IComparison) => {
+    return path.resolve(workDir, comparison.name);
 };
 
 export const getWprRecordStdoutFilepath = (workDir: string, site: ISite, id: number) => {

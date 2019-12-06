@@ -2,7 +2,12 @@ import fs from 'fs-extra';
 import path from 'path';
 
 import {IComparison, IConfig} from '@/lib/config';
-import {getWprArchiveFilepath, getWprRecordStderrFilepath, getWprRecordStdoutFilepath} from '@/lib/filepath';
+import {
+    getComparisonDir,
+    getWprArchiveFilepath,
+    getWprRecordStderrFilepath,
+    getWprRecordStdoutFilepath,
+} from '@/lib/filepath';
 import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {getLogger} from '@/lib/logger';
 import {createPage, launchBrowser, prepareBrowserLaunchOptions, preparePageProfile} from '@/lib/puppeteer';
@@ -46,9 +51,9 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
     const sites = comparison.sites;
 
     // check workDir
-    const comparisonDir = path.resolve(config.workDir, comparison.name);
+    const comparisonDir = getComparisonDir(config.workDir, comparison);
 
-    if (fs.existsSync(comparisonDir) === false) {
+    if (!fs.existsSync(comparisonDir)) {
         await fs.mkdir(comparisonDir);
     }
 
@@ -68,7 +73,12 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             });
             wprRecordProcesses.push(wprRecordProcess);
 
-            const browser = launchBrowser(prepareBrowserLaunchOptions(config));
+            const launchOptions = {
+                ...prepareBrowserLaunchOptions(config),
+                wpr: {httpPort, httpsPort},
+            };
+
+            const browser = launchBrowser(launchOptions);
             launchBrowserPromises.push(browser);
         }
 
