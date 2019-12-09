@@ -5,12 +5,14 @@ import {IComparison, IConfig} from '@/lib/config';
 import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
+    getPageStructureSizesAfterLoadedFilepath,
     getWprArchiveFilepath,
     getWprRecordStderrFilepath,
     getWprRecordStdoutFilepath,
 } from '@/lib/fs';
 import {getLogger} from '@/lib/logger';
 import {createPage, launchBrowser, prepareBrowserLaunchOptions, preparePageProfile} from '@/lib/puppeteer';
+import {getPageStructureSizes} from '@/lib/puppeteer/pageStructureSizes';
 import {IBaseWprConfig, IWprConfig, IWprProcessOptions} from './types';
 import WprRecord from './WprRecord';
 import WprReplay from './WprReplay';
@@ -97,7 +99,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
         const browsers = await Promise.all(launchBrowserPromises);
 
         // ready
-        const pageOpens = [];
+        const processPagePromises = [];
 
         for (const siteIndex of comparison.sites.keys()) {
             const site = sites[siteIndex];
@@ -111,10 +113,16 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
             const page = await createPage(browser, pageProfile);
 
-            pageOpens.push(page.goto(site.url, {waitUntil: 'networkidle0'}));
+            const getPageStrucureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
+                .then(() => getPageStructureSizes(page))
+                .then(
+                    (sizes) => fs.writeJson(getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id), sizes),
+                );
+
+            processPagePromises.push(getPageStrucureSizesPromise);
         }
 
-        await Promise.all(pageOpens);
+        await Promise.all(processPagePromises);
 
         // close wpr processes and browsers
         await Promise.all(
