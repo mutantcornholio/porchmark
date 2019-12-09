@@ -14,7 +14,7 @@ export default (): IConfig => ({
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
-        selectWprMethod: SelectWprMethods.HtmlSizeCloser,
+        selectWprMethod: SelectWprMethods.closestByHtmlSize,
         cacheEnabled: true,
         imagesEnabled: true,
         javascriptEnabled: true,
