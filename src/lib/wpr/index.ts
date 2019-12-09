@@ -2,13 +2,13 @@ import fs from 'fs-extra';
 import path from 'path';
 
 import {IComparison, IConfig} from '@/lib/config';
+import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
     getWprArchiveFilepath,
     getWprRecordStderrFilepath,
     getWprRecordStdoutFilepath,
-} from '@/lib/filepath';
-import {findTwoFreePorts} from '@/lib/findFreePorts';
+} from '@/lib/fs';
 import {getLogger} from '@/lib/logger';
 import {createPage, launchBrowser, prepareBrowserLaunchOptions, preparePageProfile} from '@/lib/puppeteer';
 import {IBaseWprConfig, IWprConfig, IWprProcessOptions} from './types';

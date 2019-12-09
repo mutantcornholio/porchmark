@@ -5,13 +5,13 @@ import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
 
 const logger = getLogger();
 
+import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
     getWprArchiveFilepath,
     getWprReplayStderrFilepath,
     getWprReplayStdoutFilepath,
-} from '@/lib/filepath';
-import {findTwoFreePorts} from '@/lib/findFreePorts';
+} from '@/lib/fs';
 import {createWprReplayProcess} from '@/lib/wpr';
 import WprReplay from '@/lib/wpr/WprReplay';
 import {launchBrowser, prepareBrowserLaunchOptions} from './browser';

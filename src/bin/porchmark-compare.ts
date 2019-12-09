@@ -14,7 +14,7 @@ setLogger(logger);
 import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
-import {getComparisonDir} from '@/lib/filepath';
+import {getComparisonDir} from '@/lib/fs';
 import * as view from '@/lib/view';
 import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
