@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import puppeteer from 'puppeteer';
 
 import {IComparison, IConfig} from '@/lib/config';
 import {findTwoFreePorts} from '@/lib/findFreePorts';
@@ -20,6 +21,7 @@ import {
     preparePageProfile,
 } from '@/lib/puppeteer';
 import {getPageStructureSizes} from '@/lib/puppeteer/pageStructureSizes';
+import {ISite} from '@/types';
 import {IBaseWprConfig, IWprConfig, IWprProcessOptions} from './types';
 import WprRecord from './WprRecord';
 import WprReplay from './WprReplay';
@@ -52,6 +54,28 @@ export const createWprReplayProcess = (options: IWprProcessOptions) => {
     };
 
     return new WprReplay(config);
+};
+
+const openPageWithRetries = async (page: puppeteer.Page, site: ISite, retryCount = 3): Promise<puppeteer.Page> =>  {
+    let retry = 0;
+
+    while (retry < retryCount) {
+        try {
+            await page.goto(site.url, {waitUntil: 'networkidle0'});
+            return page;
+        } catch (error) {
+            retry++;
+
+            if (retry > retryCount) {
+                throw error;
+            } else {
+                logger.error(error);
+                logger.warn(`retry page open: ${site.url}`);
+            }
+        }
+    }
+
+    return page;
 };
 
 export const recordWprArchives = async (comparison: IComparison, config: IConfig): Promise<void> => {
@@ -134,7 +158,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
+            const pageStructureSizesPromise = openPageWithRetries(page, site)
                 .then(() => getPageStructureSizes(page))
                 .then(
                     (sizes) => fs.writeJson(getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id), sizes),
@@ -156,6 +180,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
         const pageStructureSizesPromises = [];
 
+        // get page structure sizes without javascript
         for (const siteIndex of comparison.sites.keys()) {
             const site = sites[siteIndex];
             const browser = browsers[siteIndex];
@@ -170,7 +195,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             };
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
+            const pageStructureSizesPromise = openPageWithRetries(page, site)
                 .then(() => getPageStructureSizes(page))
                 .then(
                     (sizes) => fs.writeJson(getPageStructureSizesFilepath(comparisonDir, site, id), sizes),
