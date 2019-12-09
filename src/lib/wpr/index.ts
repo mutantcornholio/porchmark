@@ -5,13 +5,20 @@ import {IComparison, IConfig} from '@/lib/config';
 import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
-    getPageStructureSizesAfterLoadedFilepath,
+    getPageStructureSizesAfterLoadedFilepath, getPageStructureSizesFilepath,
     getWprArchiveFilepath,
     getWprRecordStderrFilepath,
-    getWprRecordStdoutFilepath,
+    getWprRecordStdoutFilepath, getWprReplayStderrFilepath, getWprReplayStdoutFilepath,
 } from '@/lib/fs';
+import {sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
-import {createPage, launchBrowser, prepareBrowserLaunchOptions, preparePageProfile} from '@/lib/puppeteer';
+import {
+    createPage,
+    IPageProfile,
+    launchBrowser,
+    prepareBrowserLaunchOptions,
+    preparePageProfile,
+} from '@/lib/puppeteer';
 import {getPageStructureSizes} from '@/lib/puppeteer/pageStructureSizes';
 import {IBaseWprConfig, IWprConfig, IWprProcessOptions} from './types';
 import WprRecord from './WprRecord';
@@ -66,19 +73,31 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             `[recordWprArchives] record wpr archives: ${id + 1} of ${recordWprCount}`,
         );
         const wprRecordProcesses = [];
+        const wprReplayProcesses = [];
         const launchBrowserPromises = [];
 
         for (const site of comparison.sites) {
             const [httpPort, httpsPort] = await findTwoFreePorts();
+
+            const wprArchiveFilepath = getWprArchiveFilepath(comparisonDir, site, id);
 
             const wprRecordProcess = createWprRecordProcess({
                 httpPort,
                 httpsPort,
                 stdoutFilepath: getWprRecordStdoutFilepath(comparisonDir, site, id),
                 stderrFilepath: getWprRecordStderrFilepath(comparisonDir, site, id),
-                wprArchiveFilepath: getWprArchiveFilepath(comparisonDir, site, id),
+                wprArchiveFilepath,
             });
             wprRecordProcesses.push(wprRecordProcess);
+
+            const wprReplayProcess = createWprReplayProcess({
+                httpPort,
+                httpsPort,
+                stdoutFilepath: getWprReplayStdoutFilepath(comparisonDir, site, 0, id),
+                stderrFilepath: getWprReplayStderrFilepath(comparisonDir, site, 0, id),
+                wprArchiveFilepath,
+            });
+            wprReplayProcesses.push(wprReplayProcess);
 
             const launchOptions = {
                 ...prepareBrowserLaunchOptions(config),
@@ -99,11 +118,13 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
         const browsers = await Promise.all(launchBrowserPromises);
 
         // ready
-        const processPagePromises = [];
+        const recordPageWprPromises = [];
 
         for (const siteIndex of comparison.sites.keys()) {
             const site = sites[siteIndex];
             const browser = browsers[siteIndex];
+
+            logger.info(`[recordWprArchives] record wpr archive for ${site.name}`);
 
             const pageProfile = preparePageProfile(config);
 
@@ -113,22 +134,59 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
             const page = await createPage(browser, pageProfile);
 
-            const getPageStrucureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
+            const pageStructureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
                 .then(() => getPageStructureSizes(page))
                 .then(
                     (sizes) => fs.writeJson(getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id), sizes),
-                );
+                )
+                .then(() => page.close());
 
-            processPagePromises.push(getPageStrucureSizesPromise);
+            recordPageWprPromises.push(pageStructureSizesPromise);
         }
 
-        await Promise.all(processPagePromises);
+        await Promise.all(recordPageWprPromises);
+
+        // close wpr record processes
+        await Promise.all(wprRecordProcesses.map((p) => p.stop()));
+
+        // start wpr replay process on same ports
+        await Promise.all(wprReplayProcesses.map(
+            (p) => p.start().then(() => sleep(100)),
+        ));
+
+        const pageStructureSizesPromises = [];
+
+        for (const siteIndex of comparison.sites.keys()) {
+            const site = sites[siteIndex];
+            const browser = browsers[siteIndex];
+
+            logger.info(`[recordWprArchives] get page structure sizes for ${site.name}`);
+
+            const pageProfile: IPageProfile = {
+                ...preparePageProfile(config),
+                cpuThrottling: null,
+                networkThrottling: null,
+                javascriptEnabled: false,
+            };
+            const page = await createPage(browser, pageProfile);
+
+            const pageStructureSizesPromise = page.goto(site.url, {waitUntil: 'networkidle0'})
+                .then(() => getPageStructureSizes(page))
+                .then(
+                    (sizes) => fs.writeJson(getPageStructureSizesFilepath(comparisonDir, site, id), sizes),
+                )
+                .then(() => page.close());
+
+            pageStructureSizesPromises.push(pageStructureSizesPromise);
+        }
+
+        await Promise.all(pageStructureSizesPromises);
 
         // close wpr processes and browsers
         await Promise.all(
             [
                 ...browsers.map((bro) => bro.close()),
-                ...wprRecordProcesses.map((p) => p.stop()),
+                ...wprReplayProcesses.map((p) => p.stop()),
             ],
         );
     }
