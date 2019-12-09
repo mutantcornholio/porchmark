@@ -1,5 +1,5 @@
+import {IPageStructureSizes} from '@/lib/puppeteer';
 import {ChildProcess} from 'child_process';
-import {IPageStructureSizes} from "@/lib/puppeteer";
 
 export interface IBaseWprConfig {
     bin: string;
@@ -42,4 +42,5 @@ export interface IWprArchive {
 
 export interface ISelectedWprArchives {
     wprArchives: IWprArchive[];
+    diff: number;
 }
