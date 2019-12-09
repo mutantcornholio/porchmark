@@ -1,12 +1,16 @@
 import {IConfig} from '@/lib/config';
+import {getPageStructureSizesFilepath} from '@/lib/fs';
+import {getLogger} from '@/lib/logger';
 import {ISelectedWprArchives, IWprArchive} from '@/lib/wpr/types';
 import {ISite} from '@/types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
+const logger = getLogger();
+
 const parseWprArchiveFilenameRegex = /(.*)-(\d+)\.wprgo/;
 
-const getWprArchiveInfo = async (comparisonDir: string, filename: string) => {
+const getWprArchiveInfo = async (comparisonDir: string, filename: string): Promise<IWprArchive> => {
     const match = parseWprArchiveFilenameRegex.exec(filename);
 
     if (!match) {
@@ -16,16 +20,26 @@ const getWprArchiveInfo = async (comparisonDir: string, filename: string) => {
     const siteName = match[1];
     const wprArchiveId = Number(match[2]);
 
-    // TODO get page structure sizes
+    const [stat, structureSizes] = await Promise.all([
+        fs.stat(path.resolve(comparisonDir, filename)),
+        fs.readJson(getPageStructureSizesFilepath(comparisonDir, {name: siteName, url: ''}, wprArchiveId))
+            .catch((error) => {
+                if (error.code === 'ENOENT') {
+                    logger.warn(
+                        `skip wpr for site=${siteName} wprArchiveId=${wprArchiveId}, no pageStructureSizes`,
+                    );
+                    return null;
+                }
 
-    const stat = await fs.stat(path.resolve(comparisonDir, filename));
+                throw error;
+            }),
+    ]);
 
     return {
-        filename,
         siteName,
         wprArchiveId,
         size: stat.size,
-        // pageStructureSizes,
+        structureSizes,
     };
 };
 
@@ -35,7 +49,7 @@ export async function getWprArchives(comparisonDir: string, sites: ISite[]): Pro
     const wprs = await Promise.all(wprFiles.map((filename) => getWprArchiveInfo(comparisonDir, filename)));
 
     const siteNames = sites.map((site) => site.name);
-    return wprs.filter((wpr) => siteNames.includes(wpr.siteName));
+    return wprs.filter((wpr) => siteNames.includes(wpr.siteName) && wpr.structureSizes);
 }
 
 const selectWprByWprArchiveId = (wprs: IWprArchive[], site: ISite, wprArchiveId: number): IWprArchive => {
@@ -58,7 +72,6 @@ export async function selectWprArchivesSimple(
     for (let i = 0; i < count; i++) {
         const selected: ISelectedWprArchives = {
             wprArchives: [],
-            // wprArchiveSizeDiffs: [],
         };
 
         for (const site of sites) {
