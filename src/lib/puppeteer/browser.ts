@@ -19,6 +19,7 @@ export const launchBrowser = (options: IBrowserLaunchOptions): Promise<Browser> 
     if (options.wpr) {
         args.push(
             '--ignore-certificate-errors-spki-list=PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I=',
+            // resolve all domains to 127.0.0.1 with WPR record or replay port
             `--host-resolver-rules="MAP *:80 127.0.0.1:${options.wpr.httpPort},` +
             `MAP *:443 127.0.0.1:${options.wpr.httpsPort},EXCLUDE localhost"`,
         );

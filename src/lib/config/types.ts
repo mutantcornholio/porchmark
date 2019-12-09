@@ -6,8 +6,9 @@ import {IWprArchive} from '@/lib/wpr/types';
 import {ISite, RecursivePartial} from '@/types';
 
 export enum SelectWprMethods {
+  simple = 'simple',
   closestByWprSize = 'closestByWprSize',
-  medianByWprSize = 'medianByWprSize',
+  // medianByWprSize = 'medianByWprSize',
   closestByHtmlSize = 'closestByHtmlSize',
   closestByScriptSize = 'closestByScriptSize',
 }

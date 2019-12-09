@@ -72,14 +72,19 @@ export async function selectWprArchivesSimple(
     const result: ISelectedWprArchives[] = [];
 
     for (let i = 0; i < count; i++) {
-        const selected: ISelectedWprArchives = {
-            wprArchives: [],
-            diff: 0,
-        };
+        const wprArchives: IWprArchive[] = [];
 
         for (const site of sites) {
-            selected.wprArchives.push(selectWprByWprArchiveId(wprs, site, i));
+            wprArchives.push(selectWprByWprArchiveId(wprs, site, i));
         }
+
+        const selected: ISelectedWprArchives = {
+            wprArchives,
+            diff: wprArchives.length === 2
+                ? lodash.get(wprArchives[0], ['structureSizes', 'root'])
+                    - lodash.get(wprArchives[1], ['structureSizes', 'root'])
+                : jstat.stdev(wprArchives.map((wprArchive) => lodash.get(wprArchive, ['size'])), true),
+        };
 
         result.push(selected);
     }
@@ -160,6 +165,28 @@ export async function selectWprArchives(
     wprs: IWprArchive[],
     sites: ISite[],
 ): Promise<ISelectedWprArchives[]> {
-    // return selectClosestWprArchives(wprs, sites, ['size'], config.puppeteerOptions.selectWprCount);
-    return selectWprArchivesSimple(wprs, sites, config.puppeteerOptions.selectWprCount);
+    switch (config.puppeteerOptions.selectWprMethod) {
+        case 'simple':
+            return selectWprArchivesSimple(wprs, sites, config.puppeteerOptions.selectWprCount);
+        case 'closestByWprSize':
+            return selectClosestWprArchives(wprs, sites, ['size'], config.puppeteerOptions.selectWprCount);
+        case 'closestByHtmlSize':
+            return selectClosestWprArchives(
+                wprs,
+                sites,
+                ['structureSizes', 'root'],
+                config.puppeteerOptions.selectWprCount,
+            );
+        case 'closestByScriptSize':
+            return selectClosestWprArchives(
+                wprs,
+                sites,
+                ['structureSizes', 'script'],
+                config.puppeteerOptions.selectWprCount,
+            );
+        default:
+            throw new Error(
+                `unknown config.puppeteerOptions.selectWprCount: ${config.puppeteerOptions.selectWprCount}`,
+            );
+    }
 }

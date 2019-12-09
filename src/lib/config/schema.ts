@@ -6,11 +6,12 @@ const NETWORK_PRESETS = ['GPRS', 'Regular2G', 'Good2G', 'Regular3G', 'Good3G', '
 // select wpr pairs methods
 // select wpr pairs after recordWpr stage
 const SELECT_WPR_METHODS = [
+    'simple',                        // select pairs as recorded by wprArchiveId
     'closestByWprSize',              // select more closer WPRs by size diff in absolute value
-    'medianByWprSize',               // select wpr pairs from 25 quantile to 75 quantile by wpr sizes
+    // 'medianByWprSize',               // select wpr pairs from 25 quantile to 75 quantile by wpr sizes
     'closestByHtmlSize',             // select WPR pairs with most closer html size from backend in absolute value
     'closestByScriptSize',           // select WPR pairs with most closer script size in backend html in absolute value
-    'closestByHtmlSizeAfterLoaded',  //
+    // 'closestByHtmlSizeAfterLoaded',  //
 ];
 
 const AGGREGATIONS = [
