@@ -7,10 +7,11 @@ import {DataProcessor} from '@/lib/dataProcessor';
 import {indexOfMin, sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
-import {renderTable} from '@/lib/view';
+import {getView, getViewConsole} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const logger = getLogger();
+const view = getView();
 
 const workerSet = new Set();
 
@@ -83,7 +84,7 @@ export default async function startWorking(
         }
 
         // render last results
-        renderTable(dataProcessor.calculateResults());
+        view.renderTable(dataProcessor.calculateResults());
 
         logger.info(
             `[startWorking] complete: comparison=${comparision.name}, id=${compareId}, workersDone=${workersDone}`,

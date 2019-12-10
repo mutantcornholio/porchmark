@@ -2,7 +2,7 @@ import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
 import {IBrowserProfile} from '@/lib/config';
 import {getLogger} from '@/lib/logger';
-import {ICheckOptions, ISite, IOriginalMetrics} from '@/types';
+import {ICheckOptions, IOriginalMetrics, ISite} from '@/types';
 
 const logger = getLogger();
 

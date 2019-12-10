@@ -15,19 +15,23 @@ import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
 import {getComparisonDir, saveHumanReport, saveJsonReport} from '@/lib/fs';
-import * as view from '@/lib/view';
-import {emergencyShutdown, shutdown} from '@/lib/view';
+import {getView, getViewConsole} from '@/lib/view';
+// import {destroyScreenAndLogResults, emergencyShutdown, shutdown} from '@/lib/view';
+// import {viewConsole} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
 import {ISelectedWprArchives} from '@/lib/wpr/types';
 
+const view = getView();
+const viewConsole = getViewConsole();
+
 process.on('unhandledRejection', (e) => {
     logger.error(e);
     process.exit(1);
 });
-process.on('SIGINT', () => shutdown(false));
-process.on('SIGTERM', () => shutdown(false));
+process.on('SIGINT', () => view.shutdown(false));
+process.on('SIGTERM', () => view.shutdown(false));
 
 async function startComparison(config: IConfig, comparison: IComparison) {
     if (
@@ -73,7 +77,7 @@ async function startComparison(config: IConfig, comparison: IComparison) {
             }
 
             try {
-                await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
+                await startWorking(compareId, comparison, dataProcessor, config).catch(view.emergencyShutdown);
             } catch (error) {
                 logger.error(error);
             }
@@ -109,6 +113,8 @@ program
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
 
+        view.config = config;
+
         const logfilePath = path.resolve(config.workDir, 'porchmark.log');
 
         setLogfilePath(logfilePath);
@@ -117,6 +123,6 @@ program
             await startComparison(config, comparison);
         }
 
-        shutdown(false);
+        view.shutdown(false);
     })
     .parse(process.argv);
