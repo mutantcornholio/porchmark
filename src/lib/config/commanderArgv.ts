@@ -65,7 +65,7 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
 
     logger.debug('raw config', porchmarkConfPath, rawConfig);
 
-    const config = mergeWithDefaults(rawConfig);
+    const config = mergeWithDefaults(rawConfig as IConfig);
 
     if (!config.workDir) {
         config.workDir = process.cwd();

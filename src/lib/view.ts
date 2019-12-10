@@ -99,9 +99,9 @@ class TableView {
     }
 
     public init = () => {
-        this.metrCount = this.config.metrics.length * 2;
+        this.metrCount = this.config.metrics.filter((metric) => metric.showInTable).length * 2;
 
-        this.columns = stdoutRect()[1];
+        this.columns = stdoutRect()[1] - 1;
         this.statNameWidth = Math.max.apply(null, calculatingStats.map((stat) => stat.name.length)) + 2;
         this.metrColumnWidth = Math.floor(
             (this.columns - this.statNameWidth - (this.metrCount + 2)) / (this.metrCount + 2),
@@ -124,10 +124,12 @@ class TableView {
         activeTests: number[],
     }) => {
         const table = new Table({
-            head: ['', '', ...this.config.metrics.map((metric) => ({
-                content: metric.title ? metric.title : metric.name,
-                colSpan: 2,
-            }))],
+            head: [
+                '',
+                '',
+                ...this.config.metrics.filter((metric) => metric.showInTable)
+                    .map((metric) => ({content: metric.title || metric.name, colSpan: 2})),
+            ],
             colAligns: ['left', 'right', ...Array(this.metrCount).fill('right')],
             colWidths: [
                 this.metrColumnWidth * 2,
@@ -152,6 +154,11 @@ class TableView {
             const resultRow: Cell[] = [header, statsToDisplay.map((stat) => stat.name).join('\n')];
 
             for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
+                const metric = this.config.metrics[metricIndex];
+                if (!metric.showInTable) {
+                    continue;
+                }
+
                 resultRow.push(
                     paintedMetrics[siteIndex][metricIndex].join('\n'),
                     paintedDiffs[siteIndex][metricIndex].join('\n'),
