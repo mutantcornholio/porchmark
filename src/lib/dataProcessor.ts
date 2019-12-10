@@ -1,7 +1,7 @@
 import {IComparison, IConfig, IConfigMetricsAggregation} from '@/lib/config';
 import {roundToNDigits} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
-import {ISite, watchingMetrics} from '@/types';
+import {ISite} from '@/types';
 import colors from 'colors/safe';
 import jstat from 'jstat';
 
@@ -207,7 +207,7 @@ export class DataProcessor {
         const minIterations = Math.min(...this.iterations);
 
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
+            for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
                 const values = this.rawMetrics[siteIndex][metricIndex].slice(0, minIterations);
                 const referenceValues = this.rawMetrics[0][metricIndex].slice(0, minIterations);
 
@@ -230,7 +230,7 @@ export class DataProcessor {
 
     public calculateDiffs() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
+            for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                     let res;
 
@@ -255,7 +255,7 @@ export class DataProcessor {
     }
 
     public calculateHighlits() {
-        for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
+        for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
             for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                 const statArray = this.getStatArray(statIndex, metricIndex);
 
@@ -273,7 +273,7 @@ export class DataProcessor {
 
     public calculatePaintedMetrics() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
+            for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                     const itemPaint = this.highlights[siteIndex][metricIndex][statIndex];
                     const itemValue = this.stats[siteIndex][metricIndex][statIndex];
@@ -298,7 +298,7 @@ export class DataProcessor {
 
     public calculatePaintedDiffs() {
         for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
+            for (let metricIndex = 0; metricIndex < this.config.metrics.length; metricIndex++) {
                 for (let statIndex = 0; statIndex < calculatingStats.length; statIndex++) {
                     const diff = this.diffs[siteIndex][metricIndex][statIndex];
 

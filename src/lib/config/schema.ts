@@ -94,6 +94,7 @@ const schema = joi.object().required().keys({
         joi.object().keys({
             name: joi.string().required(), // metric name, domContentLoadedEventEnd for example
             title: joi.string(),           // metric title for table view, DCL for example
+            showInTable: joi.boolean(),
         }),
     ),
     metricAggregations: joi.array().min(1).items(  // metric aggregations, applied for every metric

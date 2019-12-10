@@ -61,6 +61,7 @@ export interface IComparison {
 export interface IConfigMetric {
   name: string;
   title?: string;
+  showInTable?: boolean;
 }
 
 export interface IConfigMetricsAggregation {
