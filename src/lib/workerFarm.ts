@@ -1,7 +1,5 @@
 import {
-    OriginalMetrics,
-    watchingMetrics,
-    watchingMetricsRealNames,
+    IOriginalMetrics,
 } from '@/types';
 
 import {IComparison, IConfig} from '@/lib/config';
@@ -96,13 +94,18 @@ export default async function startWorking(
         logger.error(error);
     }
 
-    function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
+    function registerMetrics([originalMetrics, siteIndex]: [IOriginalMetrics, number]): void {
         const transformedMetrics: number[] = [];
 
-        for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
-            const metricName = watchingMetricsRealNames[metricIndex];
+        logger.trace(`workerFarm registerMetrics: ${originalMetrics}`);
+
+        for (let metricIndex = 0; metricIndex < config.metrics.length; metricIndex++) {
+            const metricName = config.metrics[metricIndex].name;
+            logger.trace(`workerFarm registerMetrics: ${metricIndex}, ${metricName}, ${originalMetrics[metricName]}`);
             transformedMetrics[metricIndex] = originalMetrics[metricName];
         }
+
+        logger.trace(`workerFarm registerMetrics: transformedMetrics ${transformedMetrics}`);
 
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }

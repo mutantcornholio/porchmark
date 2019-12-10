@@ -2,7 +2,7 @@ import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
 import {IBrowserProfile} from '@/lib/config';
 import {getLogger} from '@/lib/logger';
-import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
+import {ICheckOptions, ISite, IOriginalMetrics} from '@/types';
 
 const logger = getLogger();
 
@@ -10,7 +10,7 @@ export async function runWebdriverCheck(
     site: ISite,
     _: number,
     options: ICheckOptions,
-): Promise<(OriginalMetrics|null)> {
+): Promise<(IOriginalMetrics|null)> {
     const {config} = options;
     const browserProfile = config.browserProfile;
 

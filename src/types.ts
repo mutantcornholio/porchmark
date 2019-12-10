@@ -43,7 +43,10 @@ export const watchingMetricsRealNames: WatchingMetricsRealNames[] = [
     WatchingMetricsRealNames.loadEventEnd,
 ];
 
-export type OriginalMetrics = {[K in WatchingMetricsRealNames]: number};
+export interface IOriginalMetrics {
+    [index: string]: number;
+    // [K in WatchingMetricsRealNames]: number;
+}
 
 export type SiteName = string;
 
