@@ -1,5 +1,4 @@
 import {Command} from 'commander';
-import fs from 'fs';
 import path from 'path';
 
 import {IComparison, IConfig, IPartialConfig, mergeWithDefaults, validateConfig} from '@/lib/config';
@@ -37,11 +36,10 @@ export function readConfig(configPath: string): IPartialConfig {
     } catch (e) {
         if (e.code !== 'MODULE_NOT_FOUND') {
             logger.fatal(`invalid config at path ${configPath}: ${e.stack}`);
-        } else {
-            logger.fatal('error on read config', e);
+            return process.exit(1);
         }
 
-        return process.exit(1);
+        return {};
     }
 }
 
@@ -56,7 +54,7 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
         // config option
         rawConfig = readConfig(commanderArgv.config);
         configPath = commanderArgv.config;
-    } else if (fs.existsSync(porchmarkConfPath)) {
+    } else {
         // porchmark.conf.js exists
         rawConfig = readConfig(porchmarkConfPath);
         configPath = porchmarkConfPath;
@@ -87,7 +85,7 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
                 logger.fatal(`path=${e.path.join('.')}, ${e.message}`);
             });
         } else {
-            logger.error(error);
+            logger.fatal(error);
         }
 
         process.exit(1);

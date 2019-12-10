@@ -13,13 +13,13 @@ const mergeWithDefaults = (rawConfig: IPartialConfig): IConfig => {
     return defaultsDeep({}, rawConfig, getDefaultConfig());
 };
 
-const validateConfig = (rawConfig: any): IConfig => {
+const validateConfig = (rawConfig: any): Promise<IConfig> => {
     const options: joi.ValidationOptions = {
         abortEarly: false,
         convert: true,
     };
 
-    return schema.validateAsync(rawConfig, options) as any as IConfig;
+    return schema.validateAsync(rawConfig, options);
 };
 
 export {

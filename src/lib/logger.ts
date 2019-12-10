@@ -3,7 +3,7 @@ import * as tracer from 'tracer';
 
 export type Logger = tracer.Tracer.Logger;
 
-export let loggerInstance: Logger;
+let loggerInstance: Logger;
 
 export const createLogger = () => {
     return tracer.colorConsole({
