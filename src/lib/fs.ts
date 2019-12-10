@@ -1,5 +1,5 @@
 import {IComparison} from '@/lib/config';
-import {IReport} from '@/lib/dataProcessor';
+import {IHumanReport, IJsonReport} from '@/lib/dataProcessor';
 import {ISite} from '@/types';
 import cTable = require('console.table');
 import * as fs from 'fs-extra';
@@ -49,12 +49,12 @@ export const getHumanReportFilepath = (workDir: string, id: string) => {
     return path.resolve(workDir, `human-report-${id}.txt`);
 };
 
-export const saveJsonReport = async (workDir: string, report: IReport, id: string) => {
+export const saveJsonReport = async (workDir: string, report: IJsonReport, id: string) => {
     const filepath = getReportFilepath(workDir, id);
     await fs.writeJson(filepath, report);
 };
 
-export const saveHumanReport = async (workDir: string, report: IReport, id: string) => {
+export const saveHumanReport = async (workDir: string, report: IHumanReport, id: string) => {
     const filepath = getHumanReportFilepath(workDir, id);
     const table = cTable.getTable(report.headers, report.data);
     await fs.writeFile(filepath, table);

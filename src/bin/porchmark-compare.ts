@@ -81,11 +81,11 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
         clearInterval(renderTableInterval);
 
-        const report = await dataProcessor.calcReport(comparison.sites);
+        const {humanReport, jsonReport} = await dataProcessor.calcReports(comparison.sites);
 
         await Promise.all([
-            saveJsonReport(comparisonDir, report, 'total'),
-            saveHumanReport(comparisonDir, report, 'total'),
+            saveJsonReport(comparisonDir, jsonReport, 'total'),
+            saveHumanReport(comparisonDir, humanReport, 'total'),
         ]);
     }
 }
