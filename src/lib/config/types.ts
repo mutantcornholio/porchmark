@@ -64,7 +64,7 @@ export interface IConfigMetric {
 }
 
 export interface IConfigMetricsAggregation {
-  name: string;
+  name: 'q50' | 'q80' | 'q95' | 'stdev' | 'count';
   includeMetrics?: string[];
   excludeMetrics?: string[];
 }

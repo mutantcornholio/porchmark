@@ -1,8 +1,13 @@
-import {IComparison, IConfig} from '@/lib/config';
+import {IComparison, IConfig, IConfigMetricsAggregation} from '@/lib/config';
 import {roundToNDigits} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
-import {watchingMetrics} from '@/types';
+import {ISite, watchingMetrics} from '@/types';
 import colors from 'colors/safe';
+import jstat from 'jstat';
+
+import {getLogger} from '@/lib/logger';
+
+const logger = getLogger();
 
 type Sites = string[];
 type RawMetrics = (number)[][][];
@@ -14,6 +19,21 @@ type PaintedDiffs = Array<string|null>[][];
 type Iterations = number[];
 type ActiveTests = number[];
 type StatArrays = Array<number|null>[][];
+
+export interface IMetric {
+    name: string;
+    title?: string;
+}
+
+export interface IMetrics {
+    [index: string]: number[];
+}
+
+export interface IReport {
+    headers: string[];
+    data: (string)[][];
+    rawData: (number | string)[][];
+}
 
 export class DataProcessor {
     public sites: Sites;
@@ -31,11 +51,15 @@ export class DataProcessor {
     public calculationCache: {
         statArrays: StatArrays,
     };
+    protected _metrics: {
+        [index: string]: IMetrics, // [index: SiteName]
+    };
 
     constructor(config: IConfig, comparision: IComparison) {
         this.sites = comparision.sites.map((site) => site.url);
         this.comparision = comparision;
         this.config = config;
+        this._metrics = {};
 
         // These are growing with each sample
         // this.rawMetrics[siteIndex][metricIndex] is array of all metric samples
@@ -93,8 +117,14 @@ export class DataProcessor {
 
     // Takes metrics for site
     public registerMetrics(siteIndex: number, metricValues: number[]): void {
-        for (const [metricIndex, value] of metricValues.entries()) {
-            this.rawMetrics[siteIndex][metricIndex].push(value);
+        const site = this.comparision.sites[siteIndex];
+
+        for (const [metricIndex, metricValue] of metricValues.entries()) {
+            this.rawMetrics[siteIndex][metricIndex].push(metricValue);
+
+            const {name: metricName} = this.config.metrics[metricIndex];
+            const metric = this._getSiteMetric(site.name, metricName);
+            metric.push(metricValue);
         }
 
         this.iterations[siteIndex]++;
@@ -283,5 +313,119 @@ export class DataProcessor {
     // returns iteration count of least successful site
     public getLeastIterations(): number {
         return Math.min(...this.iterations);
+    }
+
+    public async calcReport(sites: ISite[]) {
+        const siteNames = sites.map((site) => site.name);
+        const headers = [
+            'metric',
+            'func',
+            ...siteNames,
+            // diff headers (diff0-${siteIndex}): diff0-1, diff0-2
+            ...siteNames.filter((_, index) => index > 0).map((_, index) => `diff0-${index + 1}`),
+            'p-value',
+        ];
+
+        const report: IReport = {
+            headers,
+            data: [],
+            rawData: [],
+        };
+
+        for (const metric of this.config.metrics) {
+            const metricName = metric.name;
+            const metricTitle = metric.title ? metric.title : metric.name;
+
+            for (const aggregation of this.config.metricAggregations) {
+                const rawRow: (number | string)[] = [metricTitle, aggregation.name];
+                const row: string[] = [metricTitle, aggregation.name];
+
+                if (aggregation.includeMetrics && !aggregation.includeMetrics.includes(metricName)) {
+                    logger.info(`includeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
+                    continue;
+                }
+
+                if (aggregation.excludeMetrics && aggregation.excludeMetrics.includes(metricName)) {
+                    logger.info(`excludeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
+                    continue;
+                }
+
+                const allSitesMetrics = [];
+
+                const values: number[] = [];
+
+                for (const siteName of siteNames) {
+                    const metricValues = this._getSiteMetric(siteName, metricName);
+                    allSitesMetrics.push(metricValues);
+
+                    const aggregated = this._calcAggregation(aggregation, metricName, metricValues);
+                    rawRow.push(aggregated);
+
+                    const fixedNumber = this._toFixedNumber(aggregated);
+                    row.push(fixedNumber);
+
+                    values.push(aggregated);
+                }
+
+                // add diff
+                values.forEach((value, index) => {
+                    if (index === 0) {
+                        return;
+                    }
+
+                    const diff = value - values[0];
+                    row.push(`${this._getSign(diff)}${this._toFixedNumber(diff)}`);
+                });
+
+                // calc p-value
+                const pval = jstat.anovaftest(...allSitesMetrics);
+                rawRow.push(pval);
+                row.push(this._toFixedNumber(pval));
+
+                report.rawData.push(rawRow);
+                report.data.push(row);
+            }
+        }
+
+        return report;
+    }
+
+    protected _toFixedNumber(i: number): string {
+        return typeof i === 'number' ? i.toFixed(2) : '-';
+    }
+
+    protected _getSign(i: number) {
+        return i > 0 ? '+' : '';
+    }
+
+    protected _getSiteMetric(siteName: string, metricName: string): number[] {
+        if (!this._metrics[siteName]) {
+            this._metrics[siteName] = {};
+        }
+
+        if (!this._metrics[siteName][metricName]) {
+            this._metrics[siteName][metricName] = [];
+        }
+
+        return this._metrics[siteName][metricName];
+    }
+
+    protected _calcAggregation(aggregation: IConfigMetricsAggregation, metricName: string, metrics: number[]) {
+        logger.debug(`metric=${metricName}: calc aggregation=${aggregation}`);
+
+        switch (aggregation.name) {
+            case 'q50':
+                return jstat.percentile(metrics, 0.5);
+            case 'q80':
+                return jstat.percentile(metrics, 0.8);
+            case 'q95':
+                return jstat.percentile(metrics, 0.9);
+            case 'stdev':
+                return jstat.stdev(metrics, true);
+            case 'count':
+                return metrics.length;
+            default:
+                throw new Error(`unknown aggregation ${aggregation}`);
+        }
     }
 }

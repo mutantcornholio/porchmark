@@ -14,7 +14,7 @@ setLogger(logger);
 import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
-import {getComparisonDir} from '@/lib/fs';
+import {getComparisonDir, saveHumanReport, saveJsonReport} from '@/lib/fs';
 import * as view from '@/lib/view';
 import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
@@ -44,11 +44,10 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
         const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
 
+        const comparisonDir = getComparisonDir(config.workDir, comparison);
+
         if (withWpr) {
-            const wprArchives = await getWprArchives(
-                getComparisonDir(config.workDir, comparison),
-                comparison.sites,
-            );
+            const wprArchives = await getWprArchives(comparisonDir, comparison.sites);
 
             selectedWprArchives = await selectWprArchives(
                 config,
@@ -81,6 +80,13 @@ async function startComparison(config: IConfig, comparison: IComparison) {
         }
 
         clearInterval(renderTableInterval);
+
+        const report = await dataProcessor.calcReport(comparison.sites);
+
+        await Promise.all([
+            saveJsonReport(comparisonDir, report, 'total'),
+            saveHumanReport(comparisonDir, report, 'total'),
+        ]);
     }
 }
 
