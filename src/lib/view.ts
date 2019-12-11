@@ -99,6 +99,10 @@ class TableView {
     }
 
     public init = () => {
+        if (this.config.silent) {
+            return;
+        }
+
         this.metrCount = this.config.metrics.filter((metric) => metric.showInTable).length * 2;
 
         this.columns = stdoutRect()[1] - 1;
@@ -123,6 +127,10 @@ class TableView {
         iterations: number[],
         activeTests: number[],
     }) => {
+        if (this.config.silent) {
+            return;
+        }
+
         const table = new Table({
             head: [
                 '',
@@ -190,6 +198,10 @@ class TableView {
     }
 
     public shutdown = (errorHappened: boolean) => {
+        if (this.config.silent) {
+            return;
+        }
+
         this.screen.destroy();
 
         if (this.tableText) {

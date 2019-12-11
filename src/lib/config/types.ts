@@ -96,6 +96,7 @@ export interface IConfig {
   iterations: number;
   workers: number;
   pageTimeout: number;
+  silent: boolean;
   puppeteerOptions: IPuppeteerOptions;
   webdriverOptions: IWebdriverOptions;
   browserProfile: IBrowserProfile;

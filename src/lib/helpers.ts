@@ -42,3 +42,7 @@ export function stdoutRect(): [number, number] {
     }
     return [process.stdout.rows, process.stdout.columns];
 }
+
+export function isInteractive(): boolean {
+    return Boolean(process.stdout && process.stdout.isTTY && process.env.TERM !== 'dumb');
+}

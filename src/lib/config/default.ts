@@ -7,6 +7,7 @@ export default (): IConfig => ({
     iterations: 70,
     workers: 1,
     pageTimeout: 20, // in seconds
+    silent: false,
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,

@@ -5,6 +5,7 @@ import {IComparison, IConfig, IPartialConfig, mergeWithDefaults, validateConfig}
 
 import {getLogger, setLevel} from '@/lib/logger';
 import joi from '@hapi/joi';
+import {isInteractive} from "@/lib/helpers";
 
 const logger = getLogger();
 
@@ -82,6 +83,10 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
     config.pageTimeout = config.pageTimeout * 1000;
 
     initBrowserProfile(config);
+
+    if (!isInteractive()) {
+        config.silent = true;
+    }
 
     logger.debug('config', config);
 

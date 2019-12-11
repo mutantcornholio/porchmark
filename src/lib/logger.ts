@@ -1,3 +1,4 @@
+import {isInteractive} from '@/lib/helpers';
 import * as fs from 'fs';
 import * as tracer from 'tracer';
 
@@ -12,7 +13,9 @@ let loggerInstance: Logger;
 export let logfilePath: string | null = null;
 
 export const createLogger = (level: string = 'trace') => {
-    return tracer.colorConsole({
+    const loggerCreator = isInteractive() ? tracer.colorConsole : tracer.console;
+
+    return loggerCreator({
         level,
         format: [
             '{{timestamp}} <{{title}}> {{message}}',
