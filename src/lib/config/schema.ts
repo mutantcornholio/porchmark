@@ -23,7 +23,9 @@ const AGGREGATIONS = [
 const schema = joi.object().required().keys({
     workDir: joi.string().required(), // ---------------------------------- workDir for WPRs, logs, screenshots, reports
     mode: joi.string().required().valid('puppeteer', 'webdriver'),
-    iterations: joi.number().integer().min(1).default(11), // --------- how many iterations on compare
+    iterations: joi.number().integer().min(1), // --------- how many iterations on compare
+    workers: joi.number().integer().min(1),
+    pageTimeout: joi.number().integer().min(0),
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         ignoreHTTPSErrors: joi.boolean().default(false),
@@ -35,10 +37,12 @@ const schema = joi.object().required().keys({
         selectWprMethod: joi.string().valid(...SELECT_WPR_METHODS) // ----- how select WPR pairs, see SELECT_WPR_METHODS
             .default('HtmlSizeCloser'),                            //       for details
         cacheEnabled: joi.boolean().default(true), // --------------------- browser cache enabled on comparison
-        cpuThrottling: joi.object().keys({ // ----------------------------- CPU throttling options
+        cpuThrottling: joi.object().allow(null).keys({ // ----------------------------- CPU throttling options
             rate: joi.number().integer().min(0), // ----------------------- CPU throttling rate
         }),
-        networkThrottling: joi.string().valid(...NETWORK_PRESETS), // ----- Network throttling, see NETWORK_PRESETS
+
+        // Network throttling, see NETWORK_PRESETS
+        networkThrottling: joi.string().valid(...NETWORK_PRESETS).allow(null),
 
         singleProcess: joi.boolean().default(false), // ------------------- compare with single browser
         imagesEnabled: joi.boolean().default(true), // -------------------- images enabled
@@ -51,8 +55,8 @@ const schema = joi.object().required().keys({
     webdriverOptions: joi.object().keys({
         host: joi.string().required(),
         port: joi.number().integer().min(0).required(),
-        user: joi.string(),
-        key: joi.string(),
+        user: joi.string().allow(''),
+        key: joi.string().allow(''),
         desiredCapabilities: joi.object().keys({
             browserName: joi.string(),
             version: joi.string(),
@@ -60,14 +64,14 @@ const schema = joi.object().required().keys({
     }),
     browserProfile: joi.object().keys({
         mobile: joi.boolean().default(false), // -------------------------- use default mobile userAgent and viewport
-        userAgent: joi.string(),
-        height: joi.number().integer().min(0),
-        width: joi.number().integer().min(0),
+        userAgent: joi.string().allow(null),
+        height: joi.number().integer().min(0).allow(null),
+        width: joi.number().integer().min(0).allow(null),
     }),
-    comparisons: joi.array().required().items().items( // ----------------- named comparisons with site urls
+    comparisons: joi.array().required().min(1).items( // ----------------- named comparisons with site urls
         joi.object().required().keys({                 //                   see config.example.js
             name: joi.string().required(),
-            sites: joi.array().required().min(2).max(2)
+            sites: joi.array().required().min(1)
                 .items(joi.object().required().keys({
                     name: joi.string().required(),
                     url: joi.string().required(),

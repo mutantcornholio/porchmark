@@ -6,6 +6,8 @@ const exampleConfig = {
     workDir: `${__dirname}/yandex`,
     mode: 'puppeteer',
     iterations: 70,
+    workers: 1,
+    pageTimeout: 90,
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
@@ -25,10 +27,10 @@ const exampleConfig = {
         cssFilesEnabled: true,
     },
     webdriverOptions: {
-        host: 'your-grid-address.sh',
+        host: 'localhost',
         port: 4444,
-        user : 'selenium',
-        key: 'selenium',
+        user : '',
+        key: '',
         desiredCapabilities: {
             'browserName': 'chrome',
             'version': '65.0',

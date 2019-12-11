@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 
 import {Logger} from '@/lib/logger';
 import {IPageStructureSizes} from '@/lib/puppeteer/types';
-import {ISite} from '@/types';
+import {ISite, RecursivePartial} from '@/types';
 
 export enum SelectWprMethods {
   WprSizeCloser = 'WprSizeCloser',
@@ -46,8 +46,8 @@ export interface IWebdriverOptions {
 export interface IBrowserProfile {
   mobile: boolean;
   userAgent: string | null;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface IComparison {
@@ -89,8 +89,10 @@ export interface IConfig {
   workDir: string;
   mode: 'puppeteer' | 'webdriver';
   iterations: number;
-  puppeteerOptions?: IPuppeteerOptions;
-  webdriverOptions?: IWebdriverOptions;
+  workers: number;
+  pageTimeout: number;
+  puppeteerOptions: IPuppeteerOptions;
+  webdriverOptions: IWebdriverOptions;
   browserProfile: IBrowserProfile;
   comparisons: IComparison[];
   stages: {
@@ -102,6 +104,8 @@ export interface IConfig {
   metricAggregations: IConfigMetricsAggregation[];
   hooks: IConfigHooks;
 }
+
+export type IPartialConfig = RecursivePartial<IConfig>;
 
 export interface IPuppeteerConfig extends IConfig {
   puppeteerOptions: IPuppeteerOptions;

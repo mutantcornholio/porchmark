@@ -5,6 +5,10 @@ import program from 'commander';
 
 import {shutdown, viewConsole} from '@/lib/view';
 
+import {createLogger, setLogger} from '@/lib/logger';
+
+setLogger(createLogger());
+
 // if import, tsc ignores rootDir and transpile package.json and src to dist
 // tslint:disable-next-line no-var-requires
 const pkg = require('@/../package.json');

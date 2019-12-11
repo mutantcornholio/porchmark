@@ -1,18 +1,11 @@
 import {IConfig, SelectWprMethods} from '@/lib/config/types';
 
-export const DEFAULT_MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 ' +
-    '(KHTML, like Gecko) Chrome/76.0.3809.100 Mobile Safari/537.36';
-
-export const DEFAULT_VIEWPORT_WIDTH = 1366;
-export const DEFAULT_VIEWPORT_HEIGHT = 768;
-
-export const DEFAULT_MOBILE_VIEWPORT_WIDTH = 667;
-export const DEFAULT_MOBILE_VIEWPORT_HEIGHT = 375;
-
-export default {
+export default (): IConfig => ({
     workDir: '',
     mode: 'puppeteer',
     iterations: 70,
+    workers: 1,
+    pageTimeout: 20, // in seconds
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
@@ -29,11 +22,21 @@ export default {
         networkThrottling: null,
         pageNavigationTimeout: 60000,
     },
+    webdriverOptions: {
+        host: 'localhost',
+        port: 4444,
+        user : '',
+        key: '',
+        desiredCapabilities: {
+            browserName: 'chrome',
+            version: '65.0',
+        },
+    },
     browserProfile: {
         mobile: false,
         userAgent: null,
-        height: DEFAULT_VIEWPORT_HEIGHT,
-        width: DEFAULT_VIEWPORT_WIDTH,
+        height: 0,
+        width: 0,
     },
     comparisons: [],
     stages: {
@@ -62,4 +65,4 @@ export default {
         {name: 'q95'},
     ],
     hooks: {},
-} as IConfig;
+});

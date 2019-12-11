@@ -3,20 +3,17 @@ import 'source-map-support/register';
 
 import program, {Command} from 'commander';
 
+import {createLogger, setLogger} from '@/lib/logger';
+
+// setLogger should be before resolveConfig import
+setLogger(createLogger());
+
+import {resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
-import {resolveOptions} from '@/lib/options';
+
 import * as view from '@/lib/view';
 import {emergencyShutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
-
-export interface ICompareMetricsArgv {
-    iterations?: number;
-    parallel?: number;
-    mobile?: boolean;
-    insecure?: boolean;
-    timeout?: number;
-    config?: string;
-}
 
 program
     .description('realtime compare websites')
@@ -26,16 +23,18 @@ program
     .option('-k, --insecure', 'ignore HTTPS errors')
     .option('-t, --timeout <n>', 'timeout in seconds for each check; defaults to 20s', parseInt)
     .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
-    .action(function(cmd: Command) {
-        const sites: string[] = cmd.args;
-        const options = resolveOptions(cmd as ICompareMetricsArgv);
+    .action(async function(cmd: Command) {
+        const config = await resolveConfig(cmd);
 
-        const dataProcessor = new DataProcessor(sites, options);
+        // take only first comparision, TODO iterate over all comparisions
+        const comparison = config.comparisons[0];
+
+        const dataProcessor = new DataProcessor(config, comparison);
 
         setInterval(() => {
             view.renderTable(dataProcessor.calculateResults());
         }, 200);
 
-        startWorking(sites, dataProcessor, options).catch(emergencyShutdown);
+        startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
     })
     .parse(process.argv);

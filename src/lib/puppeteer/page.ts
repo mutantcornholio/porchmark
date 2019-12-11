@@ -1,28 +1,17 @@
 import puppeteer from 'puppeteer';
 
-import {
-    DEFAULT_MOBILE_USER_AGENT,
-    DEFAULT_MOBILE_VIEWPORT_HEIGHT,
-    DEFAULT_MOBILE_VIEWPORT_WIDTH,
-    DEFAULT_VIEWPORT_HEIGHT, DEFAULT_VIEWPORT_WIDTH,
-} from '@/lib/config/default';
 import {IPuppeteerConfig} from '@/lib/config/types';
 import {IPageProfile} from '@/lib/puppeteer/types';
 import NETWORK_PRESETS from './networkPresets';
 
 export const preparePageProfile = (config: IPuppeteerConfig): IPageProfile => {
     const {browserProfile} = config;
-    const {mobile} = browserProfile;
     const options = config.puppeteerOptions;
 
-    const userAgent = mobile ? DEFAULT_MOBILE_USER_AGENT : browserProfile.userAgent;
-    const width = mobile ? DEFAULT_MOBILE_VIEWPORT_WIDTH : browserProfile.width;
-    const height = mobile ? DEFAULT_MOBILE_VIEWPORT_HEIGHT : browserProfile.height;
-
     return {
-        userAgent,
-        width: width || DEFAULT_VIEWPORT_WIDTH,
-        height: height || DEFAULT_VIEWPORT_HEIGHT,
+        userAgent: browserProfile.userAgent,
+        width: browserProfile.width,
+        height: browserProfile.height,
         cacheEnabled: options.cacheEnabled,
         javascriptEnabled: options.javascriptEnabled,
         cssFilesEnabled: options.cssFilesEnabled,

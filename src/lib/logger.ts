@@ -40,5 +40,8 @@ export function setLogger(logger: Logger) {
 }
 
 export function getLogger() {
+    if (!loggerInstance) {
+        throw new Error('no global logger');
+    }
     return loggerInstance;
 }
