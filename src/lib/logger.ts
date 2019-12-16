@@ -10,6 +10,7 @@ export let logToConsole = true;
 
 export const createLogger = () => {
     return tracer.colorConsole({
+        level: 'trace',
         format: [
             '{{timestamp}} <{{title}}> {{message}}',
             {

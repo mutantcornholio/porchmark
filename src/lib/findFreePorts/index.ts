@@ -8,7 +8,7 @@ const FIND_PORT_STEP = 2;
 const config = {
     beginPort: FIND_PORT_BEGIN_PORT_DEFAULT,
     endPort: FIND_PORT_END_PORT_DEFAULT,
-    host: '127.0.0.1',
+    host: 'localhost',
     count: 2,
 };
 
