@@ -21,6 +21,8 @@ const AGGREGATIONS = [
 ];
 
 const schema = joi.object().required().keys({
+    logLevel: joi.string().default('info')
+        .valid('trace', 'debug', 'info', 'warn', 'error', 'fatal'),
     workDir: joi.string().required(), // ---------------------------------- workDir for WPRs, logs, screenshots, reports
     mode: joi.string().required().valid('puppeteer', 'webdriver'),
     iterations: joi.number().integer().min(1), // --------- how many iterations on compare

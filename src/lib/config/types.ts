@@ -88,6 +88,7 @@ export interface IConfigHooks {
 }
 
 export interface IConfig {
+  logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
   workDir: string;
   mode: 'puppeteer' | 'webdriver';
   iterations: number;

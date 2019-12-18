@@ -4,7 +4,7 @@ import path from 'path';
 
 import {IComparison, IConfig, IPartialConfig, mergeWithDefaults, validateConfig} from '@/lib/config';
 
-import {getLogger} from '@/lib/logger';
+import {getLogger, setLevel} from '@/lib/logger';
 import joi from '@hapi/joi';
 
 const logger = getLogger();
@@ -16,6 +16,7 @@ export interface ICompareMetricsArgv {
     insecure?: boolean;
     timeout?: number;
     config?: string;
+    verbose?: number;
 }
 
 export const defaultDesktopProfile = {
@@ -82,6 +83,8 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
 
     try {
         await validateConfig(config);
+
+        setLevel(config.logLevel);
     } catch (error) {
         // @ts-ignore
         if (error instanceof joi.ValidationError) {
@@ -115,6 +118,14 @@ function addOptsFromArgv(config: IConfig, commanderArgv: ICompareMetricsArgv) {
 
     if (typeof commanderArgv.timeout === 'number') {
         config.pageTimeout = commanderArgv.timeout;
+    }
+
+    if (typeof commanderArgv.verbose === 'number') {
+        if (commanderArgv.verbose === 1) {
+            config.logLevel = 'debug';
+        } else if (commanderArgv.verbose > 1) {
+            config.logLevel = 'trace';
+        }
     }
 }
 

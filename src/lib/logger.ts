@@ -9,9 +9,9 @@ export let loggerInstance: Logger;
 
 export let logfilePath: string | null = null;
 
-export const createLogger = () => {
+export const createLogger = (level: string = 'trace') => {
     return tracer.colorConsole({
-        level: 'trace',
+        level,
         format: [
             '{{timestamp}} <{{title}}> {{message}}',
             {
@@ -45,4 +45,8 @@ export function getLogger() {
         throw new Error('no global logger');
     }
     return loggerInstance;
+}
+
+export function setLevel(level: string) {
+    tracer.setLevel(level);
 }

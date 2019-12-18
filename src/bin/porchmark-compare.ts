@@ -27,6 +27,14 @@ program
     .option('-k, --insecure', 'ignore HTTPS errors')
     .option('-t, --timeout <n>', 'timeout in seconds for each check; defaults to 20s', parseInt)
     .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
+    .option(
+        '-v, --verbose',
+        'verbose logging, -v (debug), -vv (trace)',
+        function increaseVerbosity(_: number, previous: number) {
+            return previous + 1;
+        },
+        0,
+    )
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
 
