@@ -5,7 +5,7 @@ import path from 'path';
 
 import program, {Command} from 'commander';
 
-import {createLogger, setLogfilePath, setLogger, setLogToConsole} from '@/lib/logger';
+import {createLogger, setLogfilePath, setLogger} from '@/lib/logger';
 
 // setLogger should be before resolveConfig import
 const logger = createLogger();
@@ -65,11 +65,7 @@ program
                 view.renderTable(dataProcessor.calculateResults());
             }, 200);
 
-            setLogToConsole(false);
-
             await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
-
-            setLogToConsole(true);
 
             clearInterval(renderTableInterval);
 

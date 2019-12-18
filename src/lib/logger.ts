@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as tracer from 'tracer';
 
+import {viewConsole} from '@/lib/view';
+
 export type Logger = tracer.Tracer.Logger;
 
 export let loggerInstance: Logger;
 
 export let logfilePath: string | null = null;
-export let logToConsole = true;
 
 export const createLogger = () => {
     return tracer.colorConsole({
@@ -19,9 +20,7 @@ export const createLogger = () => {
         ],
         dateformat: 'HH:MM:ss.L',
         transport(data) {
-            if (logToConsole) {
-                process.stderr.write(data.output + '\n');
-            }
+            viewConsole.info(data.output);
 
             if (logfilePath) {
                 fs.appendFile(logfilePath, data.rawoutput + '\n', (err) => {
@@ -35,14 +34,6 @@ export const createLogger = () => {
 
 export function setLogfilePath(filepath: string) {
     logfilePath = filepath;
-}
-
-export function setLogToConsole(bool: boolean) {
-    logToConsole = bool;
-}
-
-export function getLogToConsole() {
-    return logToConsole;
 }
 
 export function setLogger(logger: Logger) {
