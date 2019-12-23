@@ -3,9 +3,9 @@ import path from 'path';
 
 import {IComparison, IConfig, IPartialConfig, mergeWithDefaults, validateConfig} from '@/lib/config';
 
+import {isInteractive} from '@/lib/helpers';
 import {getLogger, setLevel} from '@/lib/logger';
 import joi from '@hapi/joi';
-import {isInteractive} from "@/lib/helpers";
 
 const logger = getLogger();
 
