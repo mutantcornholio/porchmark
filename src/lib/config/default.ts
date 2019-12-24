@@ -1,6 +1,7 @@
 import {IConfig, SelectWprMethods} from '@/lib/config/types';
 
 export default (): IConfig => ({
+    logLevel: 'info',
     workDir: '',
     mode: 'puppeteer',
     iterations: 70,

@@ -7,16 +7,35 @@ import {
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {sleep} from '@/lib/helpers';
-import {runPuppeteerCheck} from '@/lib/puppeteer';
-import {shutdown, viewConsole} from '@/lib/view';
+import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
+import {renderTable, viewConsole} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const workerSet = new Set();
 
-export default async function startWorking(comparision: IComparison, dataProcessor: DataProcessor, config: IConfig) {
-    let workersDone = 0;
+let waitForCompleteInterval: NodeJS.Timeout;
 
-    const sites = comparision.sites.map((site) => site.url);
+function waitForComplete(check: () => boolean): Promise<void> {
+    return new Promise((resolve) => {
+        waitForCompleteInterval = setInterval(() => {
+            if (check()) {
+                resolve();
+            }
+        }, 100);
+    });
+}
+
+function clearWaitForComplete() {
+    clearInterval(waitForCompleteInterval);
+}
+
+export default async function startWorking(
+    compareId: number,
+    comparision: IComparison,
+    dataProcessor: DataProcessor,
+    config: IConfig,
+) {
+    let workersDone = 0;
 
     const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
@@ -31,19 +50,20 @@ export default async function startWorking(comparision: IComparison, dataProcess
                     continue;
                 }
 
-                const job = runWorker(nextSiteIndex, sites, config).catch(handleWorkerError);
+                const job = runWorker(nextSiteIndex, comparision, config).catch(handleWorkerError);
 
                 workerSet.add(job);
                 dataProcessor.reportTestStart(nextSiteIndex, job);
 
-                const clearJob = () => {workerSet.delete(job); };
+                const clearJob = () => { workerSet.delete(job); };
                 job.then(clearJob, clearJob);
             }
 
             await Promise.race(Array.prototype.slice.call(workerSet.entries()).concat(sleep(100)));
         }
 
-        shutdown(false);
+        // render last results
+        renderTable(dataProcessor.calculateResults());
     }
 
     function handleWorkerError(error: Error): void {
@@ -61,12 +81,22 @@ export default async function startWorking(comparision: IComparison, dataProcess
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }
 
-    async function runWorker(siteIndex: number, workerSites: string[], workerConfig: IConfig): Promise<void> {
+    async function runWorker(
+        siteIndex: number,
+        workerComparision: IComparison,
+        workerConfig: IConfig,
+    ): Promise<void> {
+        const workerSites = workerComparision.sites;
+
         const metrics = await Promise.race([
-            sleep(workerConfig.pageTimeout * 1000).then(() => {
-                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex]}`);
+            sleep(workerConfig.pageTimeout).then(() => {
+                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex].url}`);
             }),
-            runCheck(workerSites[siteIndex], siteIndex, workerConfig),
+            runCheck(workerSites[siteIndex], siteIndex, {
+                comparison: workerComparision,
+                config: workerConfig,
+                compareId,
+            }),
         ]);
 
         if (metrics !== null) {
@@ -77,4 +107,14 @@ export default async function startWorking(comparision: IComparison, dataProcess
     populateWorkers().catch(() => {
         // empty
     });
+
+    await waitForComplete(() => {
+        return workersDone >= config.workers;
+    });
+
+    clearWaitForComplete();
+
+    if (config.mode === 'puppeteer') {
+        await closeBrowsers();
+    }
 }

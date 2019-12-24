@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 
+import path from 'path';
+
 import program, {Command} from 'commander';
 
-import {createLogger, setLogger} from '@/lib/logger';
+import {createLogger, setLogfilePath, setLogger} from '@/lib/logger';
 
 // setLogger should be before resolveConfig import
-setLogger(createLogger());
+const logger = createLogger();
+setLogger(logger);
 
 import {resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
 import * as view from '@/lib/view';
-import {emergencyShutdown} from '@/lib/view';
+import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
+import {recordWprArchives} from '@/lib/wpr';
 
 program
     .description('realtime compare websites')
@@ -23,18 +27,57 @@ program
     .option('-k, --insecure', 'ignore HTTPS errors')
     .option('-t, --timeout <n>', 'timeout in seconds for each check; defaults to 20s', parseInt)
     .option('-c  --config [configfile.js]', 'path to config; default is `porchmark.conf.js` in current dir')
+    .option(
+        '-v, --verbose',
+        'verbose logging, -v (debug), -vv (trace)',
+        function increaseVerbosity(_: number, previous: number) {
+            return previous + 1;
+        },
+        0,
+    )
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
 
-        // take only first comparision, TODO iterate over all comparisions
+        const logfilePath = path.resolve(config.workDir, 'porchmark.log');
+
+        setLogfilePath(logfilePath);
+
+        // take only first comparision, TODO iterate over all comparisons
         const comparison = config.comparisons[0];
 
-        const dataProcessor = new DataProcessor(config, comparison);
+        if (
+            config.mode === 'puppeteer' &&
+            config.puppeteerOptions.useWpr &&
+            config.stages.recordWpr
+        ) {
+            await recordWprArchives(comparison, config);
+        }
 
-        setInterval(() => {
-            view.renderTable(dataProcessor.calculateResults());
-        }, 200);
+        if (config.stages.compareMetrics) {
+            if (config.mode === 'puppeteer' && config.puppeteerOptions.useWpr) {
+                // TODO select wpr pairs here
+                comparison.wprArchives = comparison.sites.map((site) => {
+                    return {
+                        siteName: site.name,
+                        wprArchiveId: 0,
+                        size: 0,
+                    };
+                });
 
-        startWorking(comparison, dataProcessor, config).catch(emergencyShutdown);
+                logger.info(`start comparision with wpr archives`, comparison.wprArchives);
+            }
+
+            const dataProcessor = new DataProcessor(config, comparison);
+
+            const renderTableInterval = setInterval(() => {
+                view.renderTable(dataProcessor.calculateResults());
+            }, 200);
+
+            await startWorking(0, comparison, dataProcessor, config).catch(emergencyShutdown);
+
+            clearInterval(renderTableInterval);
+
+            shutdown(false);
+        }
     })
     .parse(process.argv);

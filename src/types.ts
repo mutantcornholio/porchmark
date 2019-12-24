@@ -1,3 +1,5 @@
+import {IComparison, IConfig} from '@/lib/config';
+
 export type RecursivePartial<T> = {
     [P in keyof T]?:
     T[P] extends (infer U)[] ? RecursivePartial<U>[] :
@@ -48,4 +50,10 @@ export type SiteName = string;
 export interface ISite {
     name: SiteName;
     url: string;
+}
+
+export interface ICheckOptions {
+    compareId: number;
+    comparison: IComparison;
+    config: IConfig;
 }

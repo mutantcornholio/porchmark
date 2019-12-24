@@ -1,23 +1,63 @@
 import puppeteer from 'puppeteer';
 
-import {IConfig} from '@/lib/config';
 import {viewConsole} from '@/lib/view';
-import {OriginalMetrics} from '@/types';
+import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
 
+import {
+    getComparisonDir,
+    getWprArchiveFilepath,
+    getWprReplayStderrFilepath,
+    getWprReplayStdoutFilepath,
+} from '@/lib/filepath';
+import {findTwoFreePorts} from '@/lib/findFreePorts';
+import {createWprReplayProcess} from '@/lib/wpr';
+import WprReplay from '@/lib/wpr/WprReplay';
 import {launchBrowser, prepareBrowserLaunchOptions} from './browser';
 import {getPageMetrics} from './metrics';
 import {createPage, preparePageProfile} from './page';
 
 const bros: puppeteer.Browser[] = [];
+const wprReplays: WprReplay[] = [];
 
 export async function runPuppeteerCheck(
-    site: string,
+    site: ISite,
     siteIndex: number,
-    config: IConfig,
+    options: ICheckOptions,
 ): Promise<(OriginalMetrics|null)> {
+    const {compareId, comparison, config} = options;
+
     // Different browsers for different sites can avoid cache and connection reuse between them
     if (!bros[siteIndex]) {
-        bros[siteIndex] = await launchBrowser(prepareBrowserLaunchOptions(config));
+        if (config.puppeteerOptions.useWpr) {
+            if (!comparison.wprArchives || !comparison.wprArchives[siteIndex]) {
+                throw new Error(`no wprArchives for comparison: ${comparison.name} for siteIndex: ${siteIndex}`);
+            }
+
+            const wprArchiveId = comparison.wprArchives[siteIndex].wprArchiveId;
+
+            const [httpPort, httpsPort] = await findTwoFreePorts();
+            const comparisonDir = getComparisonDir(config.workDir, comparison);
+
+            const wprReplay = await createWprReplayProcess({
+                httpPort,
+                httpsPort,
+                stdoutFilepath: getWprReplayStdoutFilepath(comparisonDir, site, compareId, wprArchiveId),
+                stderrFilepath: getWprReplayStderrFilepath(comparisonDir, site, compareId, wprArchiveId),
+                wprArchiveFilepath: getWprArchiveFilepath(comparisonDir, site, wprArchiveId),
+            });
+            wprReplays[siteIndex] = wprReplay;
+
+            const launchOptions = {
+                ...prepareBrowserLaunchOptions(config),
+                wpr: {httpPort, httpsPort},
+            };
+
+            const [browser] = await Promise.all([launchBrowser(launchOptions), wprReplay.start()]);
+            bros[siteIndex] = browser;
+
+        } else {
+            bros[siteIndex] = await launchBrowser(prepareBrowserLaunchOptions(config));
+        }
     }
 
     const bro = bros[siteIndex];
@@ -26,7 +66,7 @@ export async function runPuppeteerCheck(
         const pageProfile = preparePageProfile(config);
         const page = await createPage(bro, pageProfile);
 
-        await page.goto(site, {waitUntil: 'networkidle0'});
+        await page.goto(site.url, {waitUntil: 'networkidle0'});
 
         const metrics = await getPageMetrics(page);
         await page.close();
@@ -37,4 +77,8 @@ export async function runPuppeteerCheck(
         delete bros[siteIndex];
         return null;
     }
+}
+
+export function closeBrowsers() {
+    return Promise.all(bros.map((bro) => bro.close()));
 }

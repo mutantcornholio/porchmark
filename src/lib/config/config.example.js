@@ -3,6 +3,7 @@
  * @type {IConfig}
  */
 const exampleConfig = {
+    logLevel: 'info',
     workDir: `${__dirname}/yandex`,
     mode: 'puppeteer',
     iterations: 70,

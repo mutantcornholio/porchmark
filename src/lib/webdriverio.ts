@@ -1,11 +1,15 @@
 import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
-// import {IBrowserProfile, IOptions, resolveBrowserProfile} from '@/lib/options';
-import {IBrowserProfile, IConfig} from '@/lib/config';
+import {IBrowserProfile} from '@/lib/config';
 import {viewConsole} from '@/lib/view';
-import {OriginalMetrics} from '@/types';
+import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
 
-export async function runWebdriverCheck(site: string, _: number, config: IConfig): Promise<(OriginalMetrics|null)> {
+export async function runWebdriverCheck(
+    site: ISite,
+    _: number,
+    options: ICheckOptions,
+): Promise<(OriginalMetrics|null)> {
+    const {config} = options;
     const browserProfile = config.browserProfile;
 
     const wdOptions = validateWDOptions(config.webdriverOptions);
@@ -21,7 +25,7 @@ export async function runWebdriverCheck(site: string, _: number, config: IConfig
             .init(wdOptions.desiredCapabilities)
             .setViewportSize({width, height})
             // @ts-ignore FIXME Property 'url' does not exist on type 'never'.
-            .url(site)
+            .url(site.url)
             .execute(getMetricsFromBrowser);
 
         return metrics.value;
