@@ -53,13 +53,17 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
 
     if (typeof commanderArgv.config === 'string') {
         // config option
-        rawConfig = readConfig(commanderArgv.config);
-        configPath = commanderArgv.config;
+        configPath = path.isAbsolute(commanderArgv.config)
+            ? commanderArgv.config
+            : path.resolve(process.cwd(), commanderArgv.config);
+        rawConfig = readConfig(configPath);
     } else {
         // porchmark.conf.js exists
-        rawConfig = readConfig(porchmarkConfPath);
         configPath = porchmarkConfPath;
+        rawConfig = readConfig(configPath);
     }
+
+    logger.debug('raw config', porchmarkConfPath, rawConfig);
 
     const config = mergeWithDefaults(rawConfig);
 
@@ -78,6 +82,8 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
     config.pageTimeout = config.pageTimeout * 1000;
 
     initBrowserProfile(config);
+
+    logger.debug('config', config);
 
     try {
         await validateConfig(config);
