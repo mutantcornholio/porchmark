@@ -39,13 +39,13 @@ export async function getWprArchives(comparisonDir: string, sites: ISite[]): Pro
 }
 
 const selectWprByWprArchiveId = (wprs: IWprArchive[], site: ISite, wprArchiveId: number): IWprArchive => {
-    const found = wprs.filter((wpr) => wpr.siteName === site.name && wpr.wprArchiveId === wprArchiveId);
+    const found = wprs.find((wpr) => wpr.siteName === site.name && wpr.wprArchiveId === wprArchiveId);
 
-    if (!found.length) {
+    if (!found) {
         throw new Error(`can't find wpr for site=${site.name}, wprArchiveId=${wprArchiveId}`);
     }
 
-    return found[0];
+    return found;
 };
 
 export async function selectWprArchivesSimple(
