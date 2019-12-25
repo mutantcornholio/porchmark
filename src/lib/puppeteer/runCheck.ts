@@ -1,7 +1,6 @@
 import puppeteer from 'puppeteer';
 
 import {getLogger} from '@/lib/logger';
-import {viewConsole} from '@/lib/view';
 import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
 
 const logger = getLogger();
@@ -76,7 +75,6 @@ export async function runPuppeteerCheck(
         return metrics;
     } catch (e) {
         logger.error(e);
-        viewConsole.error(e);
         await bros[siteIndex].close();
         delete bros[siteIndex];
         return null;

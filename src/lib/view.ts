@@ -8,7 +8,7 @@ import {stdoutRect} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
 import {watchingMetrics} from '@/types';
 
-let screen: Widgets.Screen | null;
+let screen: Widgets.Screen;
 let box: Widgets.BoxElement;
 
 let tableText = '';
@@ -122,19 +122,12 @@ function render() {
         logs.splice(0, logs.length - maxLogs);
     }
 
-    if (screen) {
-        box.setContent([...tableLines, ...logs].join('\n'));
-        screen.render();
-    }
-
+    box.setContent([...tableLines, ...logs].join('\n'));
+    screen.render();
 }
 
-export function destroyScreenAndLogResults() {
-    if (screen) {
-        screen.destroy();
-    }
-
-    screen = null;
+export function shutdown(errorHappened: boolean) {
+    screen.destroy();
 
     if (tableText) {
         // tslint:disable-next-line no-console
@@ -145,10 +138,7 @@ export function destroyScreenAndLogResults() {
         // tslint:disable-next-line no-console
         console.error(`\nLast logs:\n${logs.join('\n')}`);
     }
-}
 
-export function shutdown(errorHappened: boolean) {
-    destroyScreenAndLogResults();
     process.exit(errorHappened ? 1 : 0);
 }
 

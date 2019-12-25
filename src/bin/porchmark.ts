@@ -3,7 +3,7 @@ import 'source-map-support/register';
 
 import program from 'commander';
 
-import {shutdown, viewConsole} from '@/lib/view';
+import {shutdown} from '@/lib/view';
 
 import {createLogger, setLogger} from '@/lib/logger';
 
@@ -18,7 +18,6 @@ const version = pkg.version;
 
 process.on('unhandledRejection', (e) => {
     logger.error(e);
-    viewConsole.error(e);
     process.exit(1);
 });
 process.on('SIGINT', () => shutdown(false));

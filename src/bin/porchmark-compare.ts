@@ -16,8 +16,7 @@ import {DataProcessor} from '@/lib/dataProcessor';
 
 import {getComparisonDir} from '@/lib/filepath';
 import * as view from '@/lib/view';
-import {destroyScreenAndLogResults, emergencyShutdown, shutdown} from '@/lib/view';
-import {viewConsole} from '@/lib/view';
+import {emergencyShutdown, shutdown} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
@@ -25,7 +24,6 @@ import {ISelectedWprArchives} from '@/lib/wpr/types';
 
 process.on('unhandledRejection', (e) => {
     logger.error(e);
-    viewConsole.error(e);
     process.exit(1);
 });
 process.on('SIGINT', () => shutdown(false));
@@ -84,8 +82,6 @@ async function startComparison(config: IConfig, comparison: IComparison) {
         }
 
         clearInterval(renderTableInterval);
-
-        destroyScreenAndLogResults();
     }
 }
 

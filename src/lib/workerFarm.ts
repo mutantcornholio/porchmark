@@ -9,7 +9,7 @@ import {DataProcessor} from '@/lib/dataProcessor';
 import {sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
-import {renderTable, viewConsole} from '@/lib/view';
+import {renderTable} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const logger = getLogger();
@@ -77,7 +77,6 @@ export default async function startWorking(
 
     function handleWorkerError(error: Error): void {
         logger.error(error);
-        viewConsole.error(error);
     }
 
     function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
