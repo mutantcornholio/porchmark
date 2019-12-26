@@ -103,7 +103,12 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             const site = sites[siteIndex];
             const browser = browsers[siteIndex];
 
-            const pageProfile = preparePageProfile(config, {ignoreThrottling: true});
+            const pageProfile = preparePageProfile(config);
+
+            pageProfile.cacheEnabled = false;
+            pageProfile.cpuThrottling = null;
+            pageProfile.networkThrottling = null;
+
             const page = await createPage(browser, pageProfile);
 
             pageOpens.push(page.goto(site.url, {waitUntil: 'networkidle0'}));

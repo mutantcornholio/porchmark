@@ -4,28 +4,21 @@ import {IPuppeteerConfig} from '@/lib/config/types';
 import {IPageProfile} from '@/lib/puppeteer/types';
 import NETWORK_PRESETS from './networkPresets';
 
-export interface IPreparePageProfileOptions {
-    ignoreThrottling?: boolean;
-}
-
 export const preparePageProfile = (
     config: IPuppeteerConfig,
-    prepareOptions: IPreparePageProfileOptions = {},
 ): IPageProfile => {
     const {browserProfile} = config;
     const options = config.puppeteerOptions;
-
-    const addThrottling = !!(prepareOptions && prepareOptions.ignoreThrottling);
 
     return {
         userAgent: browserProfile.userAgent,
         width: browserProfile.width,
         height: browserProfile.height,
-        cacheEnabled: addThrottling ? options.cacheEnabled : true,
+        cacheEnabled: options.cacheEnabled,
         javascriptEnabled: options.javascriptEnabled,
         cssFilesEnabled: options.cssFilesEnabled,
-        cpuThrottling: addThrottling ? options.cpuThrottling : null,
-        networkThrottling: addThrottling ? options.networkThrottling : null,
+        cpuThrottling: options.cpuThrottling,
+        networkThrottling: options.networkThrottling,
         pageNavigationTimeout: options.pageNavigationTimeout,
     };
 };
