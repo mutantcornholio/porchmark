@@ -1,5 +1,5 @@
 import {IComparison, IConfig} from '@/lib/config';
-import {indexOfMin, roundToNDigits} from '@/lib/helpers';
+import {roundToNDigits} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
 import {watchingMetrics} from '@/types';
 import colors from 'colors/safe';
@@ -19,7 +19,6 @@ export class DataProcessor {
     public sites: Sites;
     public comparision: IComparison;
     public config: IConfig;
-    public iterationCount: number;
 
     public rawMetrics: RawMetrics;
     public stats: Stats;
@@ -37,7 +36,6 @@ export class DataProcessor {
         this.sites = comparision.sites.map((site) => site.url);
         this.comparision = comparision;
         this.config = config;
-        this.iterationCount = this.config.iterations;
 
         // These are growing with each sample
         // this.rawMetrics[siteIndex][metricIndex] is array of all metric samples
@@ -285,23 +283,5 @@ export class DataProcessor {
     // returns iteration count of least successful site
     public getLeastIterations(): number {
         return Math.min(...this.iterations);
-    }
-
-    // returns index of least successful site, to feed it to workers
-    public getNextSiteIndex(): (number|null) {
-        if (this.getLeastIterations() >= this.iterationCount) {
-            return null;
-        }
-
-        const totalTests = [];
-        for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            totalTests[siteIndex] = this.iterations[siteIndex] + this.activeTests[siteIndex];
-        }
-
-        return indexOfMin(totalTests);
-    }
-
-    public increaseIterationCount() {
-        this.iterationCount = this.iterationCount + this.config.iterations;
     }
 }

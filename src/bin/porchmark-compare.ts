@@ -75,7 +75,6 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
             try {
                 await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
-                dataProcessor.increaseIterationCount();
             } catch (error) {
                 logger.error(error);
             }

@@ -6,7 +6,7 @@ import {
 
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
-import {sleep} from '@/lib/helpers';
+import {indexOfMin, sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
 import {renderTable} from '@/lib/view';
@@ -44,11 +44,28 @@ export default async function startWorking(
 
     const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
 
+    const totalIterationCount = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr
+        ? config.iterations * (compareId + 1)
+        : config.iterations;
+
+    function getNextSiteIndex(): (number|null) {
+        if (dataProcessor.getLeastIterations() >= totalIterationCount) {
+            return null;
+        }
+
+        const totalTests = [];
+        for (let siteIndex = 0; siteIndex < dataProcessor.sites.length; siteIndex++) {
+            totalTests[siteIndex] = dataProcessor.iterations[siteIndex] + dataProcessor.activeTests[siteIndex];
+        }
+
+        return indexOfMin(totalTests);
+    }
+
     // Controls the number of workers, spawns new ones, stops process when everything's done
     async function populateWorkers() {
         while (workersDone < config.workers) {
             while (config.workers - workersDone > workerSet.size) {
-                const nextSiteIndex = dataProcessor.getNextSiteIndex();
+                const nextSiteIndex = getNextSiteIndex();
 
                 if (nextSiteIndex === null) {
                     workersDone++;
