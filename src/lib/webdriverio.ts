@@ -1,8 +1,10 @@
 import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
 import {IBrowserProfile} from '@/lib/config';
-import {viewConsole} from '@/lib/view';
+import {getLogger} from '@/lib/logger';
 import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
+
+const logger = getLogger();
 
 export async function runWebdriverCheck(
     site: ISite,
@@ -31,7 +33,7 @@ export async function runWebdriverCheck(
         return metrics.value;
 
     } catch (e) {
-        viewConsole.error(e);
+        logger.error(e);
         return null;
     }
 }

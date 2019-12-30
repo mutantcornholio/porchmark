@@ -4,7 +4,9 @@ import {IPuppeteerConfig} from '@/lib/config/types';
 import {IPageProfile} from '@/lib/puppeteer/types';
 import NETWORK_PRESETS from './networkPresets';
 
-export const preparePageProfile = (config: IPuppeteerConfig): IPageProfile => {
+export const preparePageProfile = (
+    config: IPuppeteerConfig,
+): IPageProfile => {
     const {browserProfile} = config;
     const options = config.puppeteerOptions;
 

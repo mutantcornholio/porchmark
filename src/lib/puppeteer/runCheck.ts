@@ -1,7 +1,9 @@
 import puppeteer from 'puppeteer';
 
-import {viewConsole} from '@/lib/view';
+import {getLogger} from '@/lib/logger';
 import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
+
+const logger = getLogger();
 
 import {
     getComparisonDir,
@@ -72,7 +74,7 @@ export async function runPuppeteerCheck(
         await page.close();
         return metrics;
     } catch (e) {
-        viewConsole.error(e);
+        logger.error(e);
         await bros[siteIndex].close();
         delete bros[siteIndex];
         return null;

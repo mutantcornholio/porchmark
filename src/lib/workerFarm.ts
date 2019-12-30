@@ -6,10 +6,13 @@ import {
 
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
-import {sleep} from '@/lib/helpers';
+import {indexOfMin, sleep} from '@/lib/helpers';
+import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
-import {renderTable, viewConsole} from '@/lib/view';
+import {renderTable} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
+
+const logger = getLogger();
 
 const workerSet = new Set();
 
@@ -37,13 +40,32 @@ export default async function startWorking(
 ) {
     let workersDone = 0;
 
+    logger.info(`[startWorking] start: comparison=${comparision.name} id=${compareId}`);
+
     const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
+
+    const totalIterationCount = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr
+        ? config.iterations * (compareId + 1)
+        : config.iterations;
+
+    function getNextSiteIndex(): (number|null) {
+        if (dataProcessor.getLeastIterations() >= totalIterationCount) {
+            return null;
+        }
+
+        const totalTests = [];
+        for (let siteIndex = 0; siteIndex < dataProcessor.sites.length; siteIndex++) {
+            totalTests[siteIndex] = dataProcessor.iterations[siteIndex] + dataProcessor.activeTests[siteIndex];
+        }
+
+        return indexOfMin(totalTests);
+    }
 
     // Controls the number of workers, spawns new ones, stops process when everything's done
     async function populateWorkers() {
         while (workersDone < config.workers) {
             while (config.workers - workersDone > workerSet.size) {
-                const nextSiteIndex = dataProcessor.getNextSiteIndex();
+                const nextSiteIndex = getNextSiteIndex();
 
                 if (nextSiteIndex === null) {
                     workersDone++;
@@ -64,10 +86,14 @@ export default async function startWorking(
 
         // render last results
         renderTable(dataProcessor.calculateResults());
+
+        logger.info(
+            `[startWorking] complete: comparison=${comparision.name}, id=${compareId}, workersDone=${workersDone}`,
+        );
     }
 
     function handleWorkerError(error: Error): void {
-        viewConsole.error(error);
+        logger.error(error);
     }
 
     function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
@@ -104,8 +130,8 @@ export default async function startWorking(
         }
     }
 
-    populateWorkers().catch(() => {
-        // empty
+    populateWorkers().catch((error) => {
+        logger.error(error);
     });
 
     await waitForComplete(() => {

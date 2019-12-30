@@ -32,8 +32,13 @@ export interface IWprProcessOptions {
     stderrFilepath: string;
 }
 
-export interface IWpr {
+export interface IWprArchive {
     siteName: string;
     wprArchiveId: number;
     size: number;
+}
+
+export interface ISelectedWprArchives {
+    wprArchives: IWprArchive[];
+    // wprArchiveSizeDiffs: number[];
 }

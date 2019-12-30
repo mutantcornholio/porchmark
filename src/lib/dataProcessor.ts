@@ -1,5 +1,5 @@
 import {IComparison, IConfig} from '@/lib/config';
-import {indexOfMin, roundToNDigits} from '@/lib/helpers';
+import {roundToNDigits} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
 import {watchingMetrics} from '@/types';
 import colors from 'colors/safe';
@@ -283,19 +283,5 @@ export class DataProcessor {
     // returns iteration count of least successful site
     public getLeastIterations(): number {
         return Math.min(...this.iterations);
-    }
-
-    // returns index of least successful site, to feed it to workers
-    public getNextSiteIndex(): (number|null) {
-        if (this.getLeastIterations() >= this.config.iterations) {
-            return null;
-        }
-
-        const totalTests = [];
-        for (let siteIndex = 0; siteIndex < this.sites.length; siteIndex++) {
-            totalTests[siteIndex] = this.iterations[siteIndex] + this.activeTests[siteIndex];
-        }
-
-        return indexOfMin(totalTests);
     }
 }

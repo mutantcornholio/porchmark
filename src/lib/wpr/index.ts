@@ -46,7 +46,7 @@ export const createWprReplayProcess = (options: IWprProcessOptions) => {
 };
 
 export const recordWprArchives = async (comparison: IComparison, config: IConfig): Promise<void> => {
-    logger.info(`record wpr archives for comparison: ${comparison.name}`);
+    logger.info(`[recordWprArchives] start: record wpr archives for comparison: ${comparison.name}`);
 
     const sites = comparison.sites;
 
@@ -57,7 +57,12 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
         await fs.mkdir(comparisonDir);
     }
 
-    for (let id = 0; id < config.puppeteerOptions.recordWprCount; id++) {
+    const {recordWprCount} = config.puppeteerOptions;
+
+    for (let id = 0; id < recordWprCount; id++) {
+        logger.info(
+            `[recordWprArchives] record wpr archives: ${id + 1} of ${recordWprCount}`,
+        );
         const wprRecordProcesses = [];
         const launchBrowserPromises = [];
 
@@ -99,6 +104,11 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             const browser = browsers[siteIndex];
 
             const pageProfile = preparePageProfile(config);
+
+            pageProfile.cacheEnabled = false;
+            pageProfile.cpuThrottling = null;
+            pageProfile.networkThrottling = null;
+
             const page = await createPage(browser, pageProfile);
 
             pageOpens.push(page.goto(site.url, {waitUntil: 'networkidle0'}));
@@ -114,4 +124,6 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             ],
         );
     }
+
+    logger.info(`[recordWprArchives] complete: record wpr archives for comparison: ${comparison.name}`);
 };

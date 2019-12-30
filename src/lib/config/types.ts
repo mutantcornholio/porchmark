@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 
 import {Logger} from '@/lib/logger';
 import {IPageStructureSizes} from '@/lib/puppeteer/types';
-import {IWpr} from '@/lib/wpr/types';
+import {IWprArchive} from '@/lib/wpr/types';
 import {ISite, RecursivePartial} from '@/types';
 
 export enum SelectWprMethods {
@@ -54,7 +54,7 @@ export interface IBrowserProfile {
 export interface IComparison {
   name: string;
   sites: ISite[];
-  wprArchives?: IWpr[];
+  wprArchives?: IWprArchive[];
 }
 
 export interface IConfigMetric {

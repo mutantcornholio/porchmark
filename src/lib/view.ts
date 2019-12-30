@@ -128,6 +128,7 @@ function render() {
 
 export function shutdown(errorHappened: boolean) {
     screen.destroy();
+
     if (tableText) {
         // tslint:disable-next-line no-console
         console.log(tableText);
