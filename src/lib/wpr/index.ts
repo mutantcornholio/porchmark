@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import puppeteer from 'puppeteer';
+import puppeteer, {Page} from 'puppeteer';
 
 import {IComparison, IConfig} from '@/lib/config';
 import {findTwoFreePorts} from '@/lib/findFreePorts';
@@ -76,6 +76,15 @@ const openPageWithRetries = async (page: puppeteer.Page, site: ISite, retryCount
     }
 
     return page;
+};
+
+const fetchPageStructureSizes = (page: Page, site: ISite, filepath: string) => {
+    return openPageWithRetries(page, site)
+        .then(() => getPageStructureSizes(page))
+        .then(
+            (sizes) => fs.writeJson(filepath, sizes),
+        )
+        .then(() => page.close());
 };
 
 export const recordWprArchives = async (comparison: IComparison, config: IConfig): Promise<void> => {
@@ -158,12 +167,11 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = openPageWithRetries(page, site)
-                .then(() => getPageStructureSizes(page))
-                .then(
-                    (sizes) => fs.writeJson(getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id), sizes),
-                )
-                .then(() => page.close());
+            const pageStructureSizesPromise = fetchPageStructureSizes(
+                page,
+                site,
+                getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id),
+            );
 
             recordPageWprPromises.push(pageStructureSizesPromise);
         }
@@ -195,12 +203,11 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             };
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = openPageWithRetries(page, site)
-                .then(() => getPageStructureSizes(page))
-                .then(
-                    (sizes) => fs.writeJson(getPageStructureSizesFilepath(comparisonDir, site, id), sizes),
-                )
-                .then(() => page.close());
+            const pageStructureSizesPromise = fetchPageStructureSizes(
+                page,
+                site,
+                getPageStructureSizesFilepath(comparisonDir, site, id),
+            );
 
             pageStructureSizesPromises.push(pageStructureSizesPromise);
         }
