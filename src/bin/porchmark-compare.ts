@@ -70,7 +70,7 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
             if (withWpr) {
                 comparison.wprArchives = selectedWprArchives[compareId].wprArchives;
-                logger.info(`start comparison with wpr archives`, selectedWprArchives[compareId]);
+                logger.info(`start comparison with wpr archives: ${JSON.stringify(selectedWprArchives[compareId])}`);
             }
 
             try {

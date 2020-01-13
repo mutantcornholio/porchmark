@@ -5,7 +5,6 @@ import {ISelectedWprArchives, IWprArchive} from '@/lib/wpr/types';
 import {ISite} from '@/types';
 import * as fs from 'fs-extra';
 import jstat = require('jstat');
-import lodash from 'lodash';
 import * as path from 'path';
 
 const logger = getLogger();
@@ -64,6 +63,25 @@ const selectWprByWprArchiveId = (wprs: IWprArchive[], site: ISite, wprArchiveId:
     return found;
 };
 
+export enum WprArchiveSizeTypes {
+    WPR_ARCHIVE_SIZE,
+    HTML_SIZE,
+    INLINE_SCRIPT_SIZE,
+}
+
+const getWprArchiveSize = (wprArchive: IWprArchive, type: WprArchiveSizeTypes): number => {
+    switch (type) {
+        case WprArchiveSizeTypes.WPR_ARCHIVE_SIZE:
+            return wprArchive.size;
+        case WprArchiveSizeTypes.HTML_SIZE:
+            return wprArchive.structureSizes.bytes;
+        case WprArchiveSizeTypes.INLINE_SCRIPT_SIZE:
+            return wprArchive.structureSizes.script;
+        default:
+            throw new Error(`unknown WprArchive size type: ${type}`);
+    }
+};
+
 export async function selectWprArchivesSimple(
     wprs: IWprArchive[],
     sites: ISite[],
@@ -81,8 +99,12 @@ export async function selectWprArchivesSimple(
         const selected: ISelectedWprArchives = {
             wprArchives,
             diff: wprArchives.length === 2
-                ? wprArchives[0].structureSizes.bytes - wprArchives[1].structureSizes.bytes
-                : jstat.stdev(wprArchives.map((wprArchive) => wprArchive.structureSizes.bytes, true)),
+                ? getWprArchiveSize(wprArchives[0], WprArchiveSizeTypes.HTML_SIZE)
+                    - getWprArchiveSize(wprArchives[1], WprArchiveSizeTypes.HTML_SIZE)
+                : jstat.stdev(
+                    wprArchives.map((wprArchive) => getWprArchiveSize(wprArchive, WprArchiveSizeTypes.HTML_SIZE)),
+                    true,
+                ),
         };
 
         result.push(selected);
@@ -96,7 +118,7 @@ function getAllCombinations(
     siteIndex: number,
     wprArchivesBySite: IWprArchive[][],
     siteWprArchivesCount: number,
-    sizePath: string[],
+    wprArchiveSizeType: WprArchiveSizeTypes,
     result: ISelectedWprArchives[],
 ) {
     const nextSiteIndex = siteIndex + 1;
@@ -110,8 +132,12 @@ function getAllCombinations(
             result.push({
                 wprArchives,
                 diff: wprArchives.length === 2
-                    ? lodash.get(wprArchives[0], sizePath) - lodash.get(wprArchives[1], sizePath)
-                    : jstat.stdev(wprArchives.map((wprArchive) => lodash.get(wprArchive, sizePath)), true),
+                    ? getWprArchiveSize(wprArchives[0], wprArchiveSizeType)
+                        - getWprArchiveSize(wprArchives[1], wprArchiveSizeType)
+                    : jstat.stdev(
+                        wprArchives.map((wprArchive) => getWprArchiveSize(wprArchive, wprArchiveSizeType)),
+                        true,
+                    ),
             });
         } else {
             getAllCombinations(
@@ -119,7 +145,7 @@ function getAllCombinations(
                 nextSiteIndex,
                 wprArchivesBySite,
                 siteWprArchivesCount,
-                sizePath,
+                wprArchiveSizeType,
                 result,
             );
         }
@@ -131,7 +157,7 @@ function getAllCombinations(
 export const selectClosestWprArchives = (
     wprArchives: IWprArchive[],
     sites: ISite[],
-    sizePath: string[],
+    wprArchiveSizeType: WprArchiveSizeTypes,
     count: number,
 ): ISelectedWprArchives[] => {
     const wprArchivesBySites: IWprArchive[][] = [];
@@ -152,7 +178,9 @@ export const selectClosestWprArchives = (
         wprArchivesBySites[siteIndex].push(wprArchive);
     });
 
-    const combinations = getAllCombinations([], 0, wprArchivesBySites, wprArchivesBySites[0].length, sizePath, []);
+    const combinations = getAllCombinations(
+        [], 0, wprArchivesBySites, wprArchivesBySites[0].length, wprArchiveSizeType, [],
+    );
 
     combinations.sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff));
 
@@ -168,19 +196,24 @@ export async function selectWprArchives(
         case 'simple':
             return selectWprArchivesSimple(wprs, sites, config.puppeteerOptions.selectWprCount);
         case 'closestByWprSize':
-            return selectClosestWprArchives(wprs, sites, ['size'], config.puppeteerOptions.selectWprCount);
+            return selectClosestWprArchives(
+                wprs,
+                sites,
+                WprArchiveSizeTypes.WPR_ARCHIVE_SIZE,
+                config.puppeteerOptions.selectWprCount,
+            );
         case 'closestByHtmlSize':
             return selectClosestWprArchives(
                 wprs,
                 sites,
-                ['structureSizes', 'bytes'],
+                WprArchiveSizeTypes.HTML_SIZE,
                 config.puppeteerOptions.selectWprCount,
             );
         case 'closestByScriptSize':
             return selectClosestWprArchives(
                 wprs,
                 sites,
-                ['structureSizes', 'script'],
+                WprArchiveSizeTypes.INLINE_SCRIPT_SIZE,
                 config.puppeteerOptions.selectWprCount,
             );
         default:
