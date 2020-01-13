@@ -81,9 +81,8 @@ export async function selectWprArchivesSimple(
         const selected: ISelectedWprArchives = {
             wprArchives,
             diff: wprArchives.length === 2
-                ? lodash.get(wprArchives[0], ['structureSizes', 'root'])
-                    - lodash.get(wprArchives[1], ['structureSizes', 'root'])
-                : jstat.stdev(wprArchives.map((wprArchive) => lodash.get(wprArchive, ['size'])), true),
+                ? wprArchives[0].structureSizes.bytes - wprArchives[1].structureSizes.bytes
+                : jstat.stdev(wprArchives.map((wprArchive) => wprArchive.structureSizes.bytes, true)),
         };
 
         result.push(selected);
@@ -174,7 +173,7 @@ export async function selectWprArchives(
             return selectClosestWprArchives(
                 wprs,
                 sites,
-                ['structureSizes', 'root'],
+                ['structureSizes', 'bytes'],
                 config.puppeteerOptions.selectWprCount,
             );
         case 'closestByScriptSize':
