@@ -32,11 +32,8 @@
     "lighthouse": "^5.6.0",
     "lodash": "^4.17.11",
     "puppeteer": "^2.0.0",
-    "rehype-parse": "^6.0.2",
     "source-map-support": "^0.5.16",
     "tracer": "^1.0.1",
-    "traverse": "^0.6.6",
-    "unified": "^8.4.2",
     "webdriverio": "^4.14.0"
   },
   "devDependencies": {
