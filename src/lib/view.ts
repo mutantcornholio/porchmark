@@ -124,7 +124,10 @@ class TableView {
         activeTests: number[],
     }) => {
         const table = new Table({
-            head: ['', '', ...this.config.metrics.map((metric) => ({content: metric.name, colSpan: 2}))],
+            head: ['', '', ...this.config.metrics.map((metric) => ({
+                content: metric.title ? metric.title : metric.name,
+                colSpan: 2,
+            }))],
             colAligns: ['left', 'right', ...Array(this.metrCount).fill('right')],
             colWidths: [
                 this.metrColumnWidth * 2,
