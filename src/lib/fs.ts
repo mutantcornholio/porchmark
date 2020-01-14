@@ -29,3 +29,11 @@ export const getWprReplayStderrFilepath = (workDir: string, site: ISite, id: num
 export const getWprArchiveFilepath = (workDir: string, site: ISite, id: number) => {
     return path.resolve(workDir, `${site.name}-${id}.wprgo`);
 };
+
+export const getPageStructureSizesFilepath = (workDir: string, site: ISite, wprArchiveId: number) => {
+    return path.resolve(workDir, `${site.name}-${wprArchiveId}.page-structure-sizes.json`);
+};
+
+export const getPageStructureSizesAfterLoadedFilepath = (workDir: string, site: ISite, wprArchiveId: number) => {
+    return path.resolve(workDir, `${site.name}-${wprArchiveId}.page-structure-sizes-after-loaded.json`);
+};

@@ -1,3 +1,4 @@
+import {IPageStructureSizes} from '@/lib/puppeteer';
 import {ChildProcess} from 'child_process';
 
 export interface IBaseWprConfig {
@@ -36,9 +37,10 @@ export interface IWprArchive {
     siteName: string;
     wprArchiveId: number;
     size: number;
+    structureSizes: IPageStructureSizes;
 }
 
 export interface ISelectedWprArchives {
     wprArchives: IWprArchive[];
-    // wprArchiveSizeDiffs: number[];
+    diff: number;
 }

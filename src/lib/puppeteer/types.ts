@@ -27,7 +27,7 @@ export interface IPageProfile {
 }
 
 export interface IPageStructureSizes {
-    root: number;
+    bytes: number;
     script: number;
     style: number;
     scripts: {

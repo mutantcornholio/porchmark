@@ -6,10 +6,11 @@ import {IWprArchive} from '@/lib/wpr/types';
 import {ISite, RecursivePartial} from '@/types';
 
 export enum SelectWprMethods {
-  WprSizeCloser = 'WprSizeCloser',
-  WprSizeQuantiles25to75 = 'WprSizeQuantiles25to75',
-  HtmlSizeCloser = 'HtmlSizeCloser',
-  HtmlScriptSizeCloser = 'HtmlScriptSizeCloser',
+  simple = 'simple',
+  closestByWprSize = 'closestByWprSize',
+  // medianByWprSize = 'medianByWprSize',
+  closestByHtmlSize = 'closestByHtmlSize',
+  closestByScriptSize = 'closestByScriptSize',
 }
 
 export type NetworkProfiles = 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi';

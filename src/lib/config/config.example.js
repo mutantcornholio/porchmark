@@ -16,7 +16,7 @@ const exampleConfig = {
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
-        selectWprMethod: 'HtmlSizeCloser',
+        selectWprMethod: 'closestByHtmlSize',
         cacheEnabled: false,
         cpuThrottling: {
             rate: 4,

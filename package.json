@@ -44,6 +44,7 @@
     "@types/lodash": "^4.14.117",
     "@types/node": "^10.12.0",
     "@types/puppeteer": "^2.0.0",
+    "@types/traverse": "^0.6.32",
     "@types/webdriverio": "^4.13.0",
     "tsc-watch": "^4.0.0",
     "tscpaths": "0.0.9",
