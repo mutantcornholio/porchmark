@@ -3,12 +3,11 @@ import 'source-map-support/register';
 
 import program from 'commander';
 
-import {getView, getViewConsole} from '@/lib/view';
+import {getView} from '@/lib/view';
 
 import {createLogger, setLogger} from '@/lib/logger';
 
 const view = getView();
-const viewConsole = getViewConsole();
 
 const logger = createLogger();
 setLogger(logger);

@@ -7,7 +7,7 @@ import {DataProcessor} from '@/lib/dataProcessor';
 import {indexOfMin, sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
-import {getView, getViewConsole} from '@/lib/view';
+import {getView} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const logger = getLogger();

@@ -15,16 +15,13 @@ import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
 import {getComparisonDir, saveHumanReport, saveJsonReport} from '@/lib/fs';
-import {getView, getViewConsole} from '@/lib/view';
-// import {destroyScreenAndLogResults, emergencyShutdown, shutdown} from '@/lib/view';
-// import {viewConsole} from '@/lib/view';
+import {getView} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
 import {ISelectedWprArchives} from '@/lib/wpr/types';
 
 const view = getView();
-const viewConsole = getViewConsole();
 
 process.on('unhandledRejection', (e) => {
     logger.error(e);
@@ -34,6 +31,12 @@ process.on('SIGINT', () => view.shutdown(false));
 process.on('SIGTERM', () => view.shutdown(false));
 
 async function startComparison(config: IConfig, comparison: IComparison) {
+    const dataProcessor = new DataProcessor(config, comparison);
+
+    const renderTableInterval = setInterval(() => {
+        view.renderTable(dataProcessor.calculateResults());
+    }, 200);
+
     if (
         config.mode === 'puppeteer' &&
         config.puppeteerOptions.useWpr &&
@@ -61,12 +64,6 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
             cycleCount = selectedWprArchives.length;
         }
-
-        const dataProcessor = new DataProcessor(config, comparison);
-
-        const renderTableInterval = setInterval(() => {
-            view.renderTable(dataProcessor.calculateResults());
-        }, 200);
 
         for (let compareId = 0; compareId < cycleCount; compareId++) {
             logger.info(`start comparison name=${comparison.name}, id=${compareId}`);
@@ -114,6 +111,8 @@ program
         const config = await resolveConfig(cmd);
 
         view.config = config;
+
+        view.init();
 
         const logfilePath = path.resolve(config.workDir, 'porchmark.log');
 

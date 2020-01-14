@@ -10,7 +10,8 @@
     "install": "node install.js",
     "lint": "tslint --project .",
     "ci:check": "npm run build && npm run lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf dist"
   },
   "bin": "dist/bin/porchmark.js",
   "repository": {

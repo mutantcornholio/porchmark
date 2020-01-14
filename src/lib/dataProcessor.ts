@@ -143,16 +143,15 @@ export class DataProcessor {
     public registerMetrics(siteIndex: number, metricValues: number[]): void {
         const site = this.comparision.sites[siteIndex];
 
-        logger.info(`dataProcessor.registerMetrics ${siteIndex} ${metricValues}`);
+        logger.trace(`dataProcessor.registerMetrics ${siteIndex} ${metricValues}`);
 
         for (const [metricIndex, metricValue] of metricValues.entries()) {
-            logger.info(`dataProcessor.registerMetrics: ${metricIndex} ${metricValue}`);
+            logger.trace(`dataProcessor.registerMetrics: ${metricIndex} ${metricValue}`);
             this.rawMetrics[siteIndex][metricIndex].push(metricValue);
 
-            // TODO
             const {name: metricName} = this.config.metrics[metricIndex];
 
-            logger.info(`dataProcessor.registerMetrics: ${site.name} ${metricName}, ${metricValue}`);
+            logger.trace(`dataProcessor.registerMetrics: ${site.name} ${metricName}, ${metricValue}`);
 
             const metric = this._getSiteMetric(site.name, metricName);
             metric.push(metricValue);
@@ -380,12 +379,12 @@ export class DataProcessor {
                 const row: string[] = [metricTitle, aggregation.name];
 
                 if (aggregation.includeMetrics && !aggregation.includeMetrics.includes(metricName)) {
-                    logger.info(`includeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
+                    logger.trace(`includeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
                     continue;
                 }
 
                 if (aggregation.excludeMetrics && aggregation.excludeMetrics.includes(metricName)) {
-                    logger.info(`excludeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
+                    logger.trace(`excludeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
                     continue;
                 }
 
@@ -400,7 +399,7 @@ export class DataProcessor {
                     const metricValues = this._getSiteMetric(siteName, metricName);
                     allSitesMetrics.push(metricValues);
 
-                    logger.info(`metricValues: ${metricName}, ${metricValues}`);
+                    logger.trace(`metricValues: ${metricName}, ${metricValues}`);
 
                     const aggregated = this._calcAggregation(aggregation, metricName, metricValues);
                     jsonReportData.metrics[metricName][aggregation.name][siteName] = aggregated;
