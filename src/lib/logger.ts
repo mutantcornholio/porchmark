@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as tracer from 'tracer';
 
-import {viewConsole} from '@/lib/view';
+import {getViewConsole} from '@/lib/view';
+
+const viewConsole = getViewConsole();
 
 export type Logger = tracer.Tracer.Logger;
 

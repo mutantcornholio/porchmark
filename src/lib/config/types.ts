@@ -61,10 +61,11 @@ export interface IComparison {
 export interface IConfigMetric {
   name: string;
   title?: string;
+  showInTable?: boolean;
 }
 
 export interface IConfigMetricsAggregation {
-  name: string;
+  name: 'q50' | 'q80' | 'q95' | 'stdev' | 'count';
   includeMetrics?: string[];
   excludeMetrics?: string[];
 }

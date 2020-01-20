@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import {getLogger} from '@/lib/logger';
-import {ICheckOptions, ISite, OriginalMetrics} from '@/types';
+import {ICheckOptions, IOriginalMetrics, ISite} from '@/types';
 
 const logger = getLogger();
 
@@ -25,7 +25,7 @@ export async function runPuppeteerCheck(
     site: ISite,
     siteIndex: number,
     options: ICheckOptions,
-): Promise<(OriginalMetrics|null)> {
+): Promise<(IOriginalMetrics|null)> {
     const {compareId, comparison, config} = options;
 
     // Different browsers for different sites can avoid cache and connection reuse between them

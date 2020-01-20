@@ -1,7 +1,5 @@
 import {
-    OriginalMetrics,
-    watchingMetrics,
-    watchingMetricsRealNames,
+    IOriginalMetrics,
 } from '@/types';
 
 import {IComparison, IConfig} from '@/lib/config';
@@ -9,10 +7,11 @@ import {DataProcessor} from '@/lib/dataProcessor';
 import {indexOfMin, sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
 import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
-import {renderTable} from '@/lib/view';
+import {getView} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
 const logger = getLogger();
+const view = getView();
 
 const workerSet = new Set();
 
@@ -85,7 +84,7 @@ export default async function startWorking(
         }
 
         // render last results
-        renderTable(dataProcessor.calculateResults());
+        view.renderTable(dataProcessor.calculateResults());
 
         logger.info(
             `[startWorking] complete: comparison=${comparision.name}, id=${compareId}, workersDone=${workersDone}`,
@@ -96,13 +95,18 @@ export default async function startWorking(
         logger.error(error);
     }
 
-    function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
+    function registerMetrics([originalMetrics, siteIndex]: [IOriginalMetrics, number]): void {
         const transformedMetrics: number[] = [];
 
-        for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
-            const metricName = watchingMetricsRealNames[metricIndex];
+        logger.trace(`workerFarm registerMetrics: ${originalMetrics}`);
+
+        for (let metricIndex = 0; metricIndex < config.metrics.length; metricIndex++) {
+            const metricName = config.metrics[metricIndex].name;
+            logger.trace(`workerFarm registerMetrics: ${metricIndex}, ${metricName}, ${originalMetrics[metricName]}`);
             transformedMetrics[metricIndex] = originalMetrics[metricName];
         }
+
+        logger.trace(`workerFarm registerMetrics: transformedMetrics ${transformedMetrics}`);
 
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }

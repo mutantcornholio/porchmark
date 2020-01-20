@@ -3,9 +3,11 @@ import 'source-map-support/register';
 
 import program from 'commander';
 
-import {shutdown} from '@/lib/view';
+import {getView} from '@/lib/view';
 
 import {createLogger, setLogger} from '@/lib/logger';
+
+const view = getView();
 
 const logger = createLogger();
 setLogger(logger);
@@ -20,8 +22,8 @@ process.on('unhandledRejection', (e) => {
     logger.error(e);
     process.exit(1);
 });
-process.on('SIGINT', () => shutdown(false));
-process.on('SIGTERM', () => shutdown(false));
+process.on('SIGINT', () => view.shutdown(false));
+process.on('SIGTERM', () => view.shutdown(false));
 
 program
     .version(version)

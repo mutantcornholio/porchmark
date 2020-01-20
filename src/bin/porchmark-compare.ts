@@ -14,22 +14,29 @@ setLogger(logger);
 import {IComparison, IConfig, resolveConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 
-import {getComparisonDir} from '@/lib/fs';
-import * as view from '@/lib/view';
-import {emergencyShutdown, shutdown} from '@/lib/view';
+import {getComparisonDir, saveHumanReport, saveJsonReport} from '@/lib/fs';
+import {getView} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
 import {ISelectedWprArchives} from '@/lib/wpr/types';
 
+const view = getView();
+
 process.on('unhandledRejection', (e) => {
     logger.error(e);
     process.exit(1);
 });
-process.on('SIGINT', () => shutdown(false));
-process.on('SIGTERM', () => shutdown(false));
+process.on('SIGINT', () => view.shutdown(false));
+process.on('SIGTERM', () => view.shutdown(false));
 
 async function startComparison(config: IConfig, comparison: IComparison) {
+    const dataProcessor = new DataProcessor(config, comparison);
+
+    const renderTableInterval = setInterval(() => {
+        view.renderTable(dataProcessor.calculateResults());
+    }, 200);
+
     if (
         config.mode === 'puppeteer' &&
         config.puppeteerOptions.useWpr &&
@@ -44,11 +51,10 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
         const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
 
+        const comparisonDir = getComparisonDir(config.workDir, comparison);
+
         if (withWpr) {
-            const wprArchives = await getWprArchives(
-                getComparisonDir(config.workDir, comparison),
-                comparison.sites,
-            );
+            const wprArchives = await getWprArchives(comparisonDir, comparison.sites);
 
             selectedWprArchives = await selectWprArchives(
                 config,
@@ -59,12 +65,6 @@ async function startComparison(config: IConfig, comparison: IComparison) {
             cycleCount = selectedWprArchives.length;
         }
 
-        const dataProcessor = new DataProcessor(config, comparison);
-
-        const renderTableInterval = setInterval(() => {
-            view.renderTable(dataProcessor.calculateResults());
-        }, 200);
-
         for (let compareId = 0; compareId < cycleCount; compareId++) {
             logger.info(`start comparison name=${comparison.name}, id=${compareId}`);
 
@@ -74,13 +74,20 @@ async function startComparison(config: IConfig, comparison: IComparison) {
             }
 
             try {
-                await startWorking(compareId, comparison, dataProcessor, config).catch(emergencyShutdown);
+                await startWorking(compareId, comparison, dataProcessor, config).catch(view.emergencyShutdown);
             } catch (error) {
                 logger.error(error);
             }
         }
 
         clearInterval(renderTableInterval);
+
+        const {humanReport, jsonReport} = await dataProcessor.calcReports(comparison.sites);
+
+        await Promise.all([
+            saveJsonReport(comparisonDir, jsonReport, 'total'),
+            saveHumanReport(comparisonDir, humanReport, 'total'),
+        ]);
     }
 }
 
@@ -103,6 +110,10 @@ program
     .action(async function(cmd: Command) {
         const config = await resolveConfig(cmd);
 
+        view.config = config;
+
+        view.init();
+
         const logfilePath = path.resolve(config.workDir, 'porchmark.log');
 
         setLogfilePath(logfilePath);
@@ -111,6 +122,6 @@ program
             await startComparison(config, comparison);
         }
 
-        shutdown(false);
+        view.shutdown(false);
     })
     .parse(process.argv);
