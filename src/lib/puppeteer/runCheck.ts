@@ -74,7 +74,13 @@ export async function runPuppeteerCheck(
         await page.close();
         return metrics;
     } catch (e) {
-        logger.error(e);
+        // This error appears when wpr replay not ready, but browser already open page
+        if (/WebSocket is not open/.exec(e.message)) {
+            logger.debug(e);
+        } else {
+            logger.error(e);
+        }
+
         await bros[siteIndex].close();
         delete bros[siteIndex];
         return null;
