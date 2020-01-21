@@ -81,6 +81,14 @@ export async function runPuppeteerCheck(
     }
 }
 
-export function closeBrowsers() {
+function closeBrowsers() {
     return Promise.all(bros.map((bro) => bro.close()));
+}
+
+function closeWprReplays() {
+    return Promise.all(wprReplays.map((wpr) => wpr.kill()));
+}
+
+export function close() {
+    return Promise.all([closeBrowsers(), closeWprReplays()]);
 }

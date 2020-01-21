@@ -6,7 +6,7 @@ import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {indexOfMin, sleep} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
-import {closeBrowsers, runPuppeteerCheck} from '@/lib/puppeteer';
+import {close, runPuppeteerCheck} from '@/lib/puppeteer';
 import {getView} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
 
@@ -145,6 +145,6 @@ export default async function startWorking(
     clearWaitForComplete();
 
     if (config.mode === 'puppeteer') {
-        await closeBrowsers();
+        await close();
     }
 }

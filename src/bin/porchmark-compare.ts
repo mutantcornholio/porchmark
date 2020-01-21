@@ -31,6 +31,8 @@ process.on('SIGINT', () => view.shutdown(false));
 process.on('SIGTERM', () => view.shutdown(false));
 
 async function startComparison(config: IConfig, comparison: IComparison) {
+    logger.info(`pid=${process.pid}`);
+
     const dataProcessor = new DataProcessor(config, comparison);
 
     const renderTableInterval = setInterval(() => {
@@ -82,12 +84,18 @@ async function startComparison(config: IConfig, comparison: IComparison) {
 
         clearInterval(renderTableInterval);
 
+        logger.info('save reports');
+
         const {humanReport, jsonReport} = await dataProcessor.calcReports(comparison.sites);
 
         await Promise.all([
             saveJsonReport(comparisonDir, jsonReport, 'total'),
             saveHumanReport(comparisonDir, humanReport, 'total'),
         ]);
+
+        logger.info('complete');
+
+        view.shutdown(false);
     }
 }
 

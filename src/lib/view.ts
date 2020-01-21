@@ -198,25 +198,21 @@ class TableView {
     }
 
     public shutdown = (errorHappened: boolean) => {
-        if (this.config.silent) {
-            return;
+        if (!this.config.silent) {
+            this.screen.destroy();
+
+            if (this.tableText) {
+                // tslint:disable-next-line no-console
+                console.log(this.tableText);
+            }
+
+            if (this.logs.length > 0) {
+                // tslint:disable-next-line no-console
+                console.error(`\nLast logs:\n${this.logs.join('\n')}`);
+            }
         }
 
-        this.screen.destroy();
-
-        if (this.tableText) {
-            // tslint:disable-next-line no-console
-            console.log(this.tableText);
-        }
-
-        if (this.logs.length > 0) {
-            // tslint:disable-next-line no-console
-            console.error(`\nLast logs:\n${this.logs.join('\n')}`);
-        }
-
-        process.nextTick(() => {
-            process.exit(errorHappened ? 1 : 0);
-        });
+        process.exit(errorHappened ? 1 : 0);
     }
 
     public emergencyShutdown = (error: Error) => {
