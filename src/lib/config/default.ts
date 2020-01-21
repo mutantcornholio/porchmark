@@ -7,6 +7,7 @@ export default (): IConfig => ({
     iterations: 70,
     workers: 1,
     pageTimeout: 20, // in seconds
+    silent: false,
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
@@ -46,12 +47,18 @@ export default (): IConfig => ({
         compareLighthouse: false,
     },
     metrics: [
-        {name: 'requestStart'},
-        {name: 'responseStart', title: 'TTFB'},
-        {name: 'responseEnd', title: 'TTLB'},
-        {name: 'first-contentful-paint', title: 'FCP'},
-        {name: 'domContentLoadedEventEnd', title: 'DCL'},
-        {name: 'loadEventEnd', title: 'loaded'},
+        {name: 'requestStart', showInTable: true},
+        {name: 'responseStart', title: 'TTFB', showInTable: true},
+        {name: 'responseEnd', title: 'TTLB', showInTable: true},
+        {name: 'first-paint'},
+        {name: 'first-contentful-paint', title: 'FCP', showInTable: true},
+        {name: 'domContentLoadedEventEnd', title: 'DCL', showInTable: true},
+        {name: 'loadEventEnd', title: 'loaded', showInTable: true},
+        {name: 'domInteractive'},
+        {name: 'domComplete'},
+        {name: 'transferSize'},
+        {name: 'encodedBodySize'},
+        {name: 'decodedBodySize'},
     ],
     metricAggregations: [
         {name: 'count', includeMetrics: ['requestStart']},

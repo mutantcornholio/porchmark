@@ -74,13 +74,27 @@ export async function runPuppeteerCheck(
         await page.close();
         return metrics;
     } catch (e) {
-        logger.error(e);
+        // This error appears when wpr replay not ready, but browser already open page
+        if (/WebSocket is not open/.exec(e.message)) {
+            logger.debug(e);
+        } else {
+            logger.error(e);
+        }
+
         await bros[siteIndex].close();
         delete bros[siteIndex];
         return null;
     }
 }
 
-export function closeBrowsers() {
+function closeBrowsers() {
     return Promise.all(bros.map((bro) => bro.close()));
+}
+
+function closeWprReplays() {
+    return Promise.all(wprReplays.map((wpr) => wpr.kill()));
+}
+
+export function close() {
+    return Promise.all([closeBrowsers(), closeWprReplays()]);
 }

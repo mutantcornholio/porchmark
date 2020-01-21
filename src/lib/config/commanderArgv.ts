@@ -3,6 +3,7 @@ import path from 'path';
 
 import {IComparison, IConfig, IPartialConfig, mergeWithDefaults, validateConfig} from '@/lib/config';
 
+import {isInteractive} from '@/lib/helpers';
 import {getLogger, setLevel} from '@/lib/logger';
 import joi from '@hapi/joi';
 
@@ -65,7 +66,7 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
 
     logger.debug('raw config', porchmarkConfPath, rawConfig);
 
-    const config = mergeWithDefaults(rawConfig);
+    const config = mergeWithDefaults(rawConfig as IConfig);
 
     if (!config.workDir) {
         config.workDir = process.cwd();
@@ -82,6 +83,10 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
     config.pageTimeout = config.pageTimeout * 1000;
 
     initBrowserProfile(config);
+
+    if (!isInteractive()) {
+        config.silent = true;
+    }
 
     logger.debug('config', config);
 

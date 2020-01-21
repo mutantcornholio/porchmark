@@ -30,6 +30,7 @@ const schema = joi.object().required().keys({
     iterations: joi.number().integer().min(1), // --------- how many iterations on compare
     workers: joi.number().integer().min(1),
     pageTimeout: joi.number().integer().min(0),
+    silent: joi.boolean().default(false),
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         ignoreHTTPSErrors: joi.boolean().default(false),

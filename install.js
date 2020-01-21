@@ -8,7 +8,7 @@ const tracer = require('tracer');
 const logger = tracer.console({format: "{{timestamp}} <{{title}}> {{message}}"});
 
 const baseUrl = 'https://github.com/alekzonder/catapult/releases/download';
-const release = 'wpr-build%2F2019.12.02-1';
+const release = 'wpr-build%2F2019.12.17-5';
 const file = `wpr-${os.platform()}.tgz`;
 
 const downloadUrl = `${baseUrl}/${release}/${file}`;
