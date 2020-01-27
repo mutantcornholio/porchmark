@@ -88,6 +88,8 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
         config.silent = true;
     }
 
+    normalizeMetrics(config);
+
     logger.debug('config', config);
 
     try {
@@ -173,4 +175,14 @@ function initBrowserProfile(config: IConfig) {
     }
 
     config.browserProfile = browserProfile;
+}
+
+function normalizeMetrics(config: IConfig) {
+    config.metrics = config.metrics.map((metric) => {
+        if (typeof metric.showInTable === 'undefined') {
+            metric.showInTable = true;
+        }
+
+        return metric;
+    });
 }

@@ -78,7 +78,7 @@ export interface IHookObject {
 }
 
 export type VerifyWprHook = (hook: IHookObject) => Promise<void>;
-export type CollectMetricsHook = (logger: Logger, page: puppeteer.Page) => Promise<{[index: string]: number}>;
+export type CollectMetricsHook = (hook: IHookObject) => Promise<{[index: string]: number}>;
 
 // TODO node type
 export type PageStructureSizesNodeHook = (sizes: IPageStructureSizes, node: any) => void;
