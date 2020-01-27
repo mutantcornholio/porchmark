@@ -57,6 +57,8 @@ program
 
         setLogfilePath(logfilePath);
 
+        logger.info('config', config);
+
         for (const comparison of config.comparisons) {
             await startComparison(config, comparison);
         }
