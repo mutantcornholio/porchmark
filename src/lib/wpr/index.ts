@@ -7,7 +7,7 @@ import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
     getPageStructureSizesAfterLoadedFilepath, getPageStructureSizesFilepath,
-    getWprArchiveFilepath,
+    getWprArchiveFilepath, getWprRecordScreenshotFilepath,
     getWprRecordStderrFilepath,
     getWprRecordStdoutFilepath, getWprReplayStderrFilepath, getWprReplayStdoutFilepath,
 } from '@/lib/fs';
@@ -102,10 +102,7 @@ const fetchPageStructureSizes = (
 ) => {
     return openPageWithRetries(page, site, DEFAULT_RETRY_COUNT, onVerifyWprHook)
         .then(() => getPageStructureSizes(page))
-        .then(
-            (sizes) => fs.writeJson(filepath, sizes),
-        )
-        .then(() => page.close());
+        .then((sizes) => fs.writeJson(filepath, sizes));
 };
 
 export const recordWprArchives = async (comparison: IComparison, config: IConfig): Promise<void> => {
@@ -196,7 +193,12 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
                     config.hooks && config.hooks.onVerifyWpr
                         ? config.hooks.onVerifyWpr({logger, page, comparison, site})
                         : Promise.resolve(),
-            });
+            })
+                .then(() => page.screenshot({
+                    fullPage: true,
+                    path: getWprRecordScreenshotFilepath(comparisonDir, site, id),
+                }))
+                .then(() => page.close());
 
             recordPageWprPromises.push(recordPageWprPromise);
         }
@@ -233,7 +235,8 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
                 site,
                 filepath: getPageStructureSizesFilepath(comparisonDir, site, id),
                 onVerifyWprHook: () => Promise.resolve(),
-            });
+            })
+                .then(() => page.close());
 
             pageStructureSizesPromises.push(pageStructureSizesPromise);
         }
