@@ -8,6 +8,7 @@ import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
 import {getWprArchives, selectWprArchives} from '@/lib/wpr/select';
 import {ISelectedWprArchives} from '@/lib/wpr/types';
+import fs from "fs-extra";
 
 const logger = getLogger();
 const view = getView();
@@ -36,6 +37,10 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
         const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
 
         const comparisonDir = getComparisonDir(config.workDir, comparison);
+
+        if (!fs.existsSync(comparisonDir)) {
+            await fs.mkdir(comparisonDir);
+        }
 
         if (withWpr) {
             const wprArchives = await getWprArchives(comparisonDir, comparison.sites);
@@ -76,7 +81,5 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
         ]);
 
         logger.info('complete');
-
-        view.shutdown(false);
     }
 }
