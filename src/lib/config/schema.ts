@@ -8,10 +8,8 @@ const NETWORK_PRESETS = ['GPRS', 'Regular2G', 'Good2G', 'Regular3G', 'Good3G', '
 const SELECT_WPR_METHODS = [
     'simple',                        // select pairs as recorded by wprArchiveId
     'closestByWprSize',              // select more closer WPRs by size diff in absolute value
-    // 'medianByWprSize',               // select wpr pairs from 25 quantile to 75 quantile by wpr sizes
     'closestByHtmlSize',             // select WPR pairs with most closer html size from backend in absolute value
     'closestByScriptSize',           // select WPR pairs with most closer script size in backend html in absolute value
-    // 'closestByHtmlSizeAfterLoaded',  //
 ];
 
 const AGGREGATIONS = [
@@ -34,7 +32,6 @@ const schema = joi.object().required().keys({
     puppeteerOptions: joi.object().required().keys({ // ----------------------------
         headless: joi.boolean().default(true), // ------------------------- start headless chromium
         ignoreHTTPSErrors: joi.boolean().default(false),
-        warmIterations: joi.number().integer().min(0).default(1), // ------ how many warm iterations before compare
         useWpr: joi.boolean().default(true), // --------------------------- use WPR or realtime compare
         recordWprCount: joi.number().integer().min(1).default(10), // -------- how many WPR archives collect
         selectWprCount: joi.number().integer().min(1).default(1), // ---------- how many WPR pairs select from recorded
@@ -110,25 +107,26 @@ const schema = joi.object().required().keys({
     ),
     hooks: joi.object().keys({                      // hooks
 
-        onVerifyWpr: joi.func(),                    // onVerifyWpr: (logger, page: Puppeteer.Page) => Promise<void>
+        onVerifyWpr: joi.func(),                    // onVerifyWpr: ({
+                                                    //     logger: Logger,
+                                                    //     page: Puppeteer.Page,
+                                                    //     comparison: IComparison,
+                                                    //     site: ISite
+                                                    // }) => Promise<void>
                                                     // called after WPR was collected
                                                     // here you can check page loaded correctly or not,
                                                     // throw error if page incorrect -- WPR record will be retried once
                                                     // see config.example.js
 
-        onCollectMetrics: joi.func(),            // onCollectMetrics: (logger, page: Puppeteer.Page) => Promise<object>
+        onCollectMetrics: joi.func(),            // onCollectMetrics: ({
+                                                 //     logger: Logger,
+                                                 //     page: Puppeteer.Page,
+                                                 //     comparison: IComparison,
+                                                 //     site: ISite
+                                                 // ) => Promise<object>
                                                  // called after page loaded in comparison
                                                  // return object with custom metrics
                                                  // see config.example.js
-
-        onPageStructureSizesNode: joi.func(),    // onPageStructureSizesNode: (sizes, node) => void
-                                                 // called after WPR recorded and backend html parsed
-                                                 // called on every parsed node
-                                                 // TODO need more docs
-
-        onPageStructureSizesComplete: joi.func(), // onPageStructureSizesComplete: (sizes, html, getSizeInBytes) => void
-                                                  // called after all nodes iterated
-                                                  // TODO need more docs
     }),
 });
 

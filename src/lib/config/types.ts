@@ -18,7 +18,6 @@ export type NetworkProfiles = 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'G
 export interface IPuppeteerOptions {
   headless: boolean;
   ignoreHTTPSErrors: boolean;
-  warmIterations: number;
   useWpr: boolean;
   recordWprCount: number;
   selectWprCount: number;

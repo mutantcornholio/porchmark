@@ -12,7 +12,6 @@ const exampleConfig = {
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
-        warmIterations: 1,
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
