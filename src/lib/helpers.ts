@@ -46,3 +46,10 @@ export function stdoutRect(): [number, number] {
 export function isInteractive(): boolean {
     return Boolean(process.stdout && process.stdout.isTTY && process.env.TERM !== 'dumb');
 }
+
+// TODO fix this and remove process.exit calls
+export function waitWhileLogFilesWriting(cb: () => void) {
+    setTimeout(() => {
+        cb();
+    }, 100);
+}

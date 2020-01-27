@@ -70,7 +70,14 @@ export interface IConfigMetricsAggregation {
   excludeMetrics?: string[];
 }
 
-export type VerifyWprHook = (logger: Logger, page: puppeteer.Page) => Promise<void>;
+export interface IHookObject {
+  logger: Logger;
+  page: puppeteer.Page;
+  comparison: IComparison;
+  site: ISite;
+}
+
+export type VerifyWprHook = (hook: IHookObject) => Promise<void>;
 export type CollectMetricsHook = (logger: Logger, page: puppeteer.Page) => Promise<{[index: string]: number}>;
 
 // TODO node type
