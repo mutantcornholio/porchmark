@@ -62,7 +62,7 @@ const openPageWithRetries = async (
     retryCount: number,
     onVerifyWprHook: () => Promise<void>,
 ): Promise<puppeteer.Page> =>  {
-    let retry = 1;
+    let retry = 0;
 
     while (retry <= retryCount) {
         try {
