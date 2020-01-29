@@ -13,19 +13,13 @@ setLogger(logger);
 
 import {startComparison} from '@/lib/comparison';
 import {resolveConfig} from '@/lib/config';
-import {waitWhileLogFilesWriting} from '@/lib/helpers';
 import {getView} from '@/lib/view';
 
 const view = getView();
 
 process.on('unhandledRejection', (e) => {
     logger.error(e);
-
-    // TODO wait a bit, while log file is writing
-    waitWhileLogFilesWriting(() => {
-        process.exit(1);
-    });
-
+    process.exit(1);
 });
 process.on('SIGINT', () => view.shutdown(false));
 process.on('SIGTERM', () => view.shutdown(false));

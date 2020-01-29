@@ -5,7 +5,7 @@ import {Console} from 'console';
 import {Writable} from 'stream';
 
 import {IConfig} from '@/lib/config';
-import {stdoutRect, waitWhileLogFilesWriting} from '@/lib/helpers';
+import {stdoutRect} from '@/lib/helpers';
 import {calculatingStats} from '@/lib/stats';
 
 const splitByColsRegex = new RegExp('.{1,' + process.stdout.columns + '}', 'g');
@@ -212,9 +212,7 @@ class TableView {
             }
         }
 
-        waitWhileLogFilesWriting(() => {
-            process.exit(errorHappened ? 1 : 0);
-        });
+        process.exit(errorHappened ? 1 : 0);
     }
 
     public emergencyShutdown = (error: Error) => {
