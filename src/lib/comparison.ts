@@ -39,9 +39,7 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
 
         const comparisonDir = getComparisonDir(config.workDir, comparison);
 
-        if (!fs.existsSync(comparisonDir)) {
-            await fs.mkdir(comparisonDir);
-        }
+        await fs.ensureDir(comparisonDir);
 
         if (withWpr) {
             const wprArchives = await getWprArchives(comparisonDir, comparison.sites);

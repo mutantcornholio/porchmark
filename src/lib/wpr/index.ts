@@ -113,9 +113,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
     // check workDir
     const comparisonDir = getComparisonDir(config.workDir, comparison);
 
-    if (!fs.existsSync(comparisonDir)) {
-        await fs.mkdir(comparisonDir);
-    }
+    await fs.ensureDir(comparisonDir);
 
     const {recordWprCount} = config.puppeteerOptions;
 
