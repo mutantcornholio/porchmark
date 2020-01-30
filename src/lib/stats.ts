@@ -1,32 +1,32 @@
-import {jStat} from 'jStat';
+import {jStat} from 'jstat';
 
-export type Stat = {
-    name: string,
-    calc: (values: number[], referenceValues?: number[]) => number,
-    roundDigits: number,
-    diffAplicable: boolean,
-    applicableToReference: boolean,
-    paint: (values: (number | null)[]) => (0 | -1 | 1 | null)[],
-};
+export interface IStat {
+    name: string;
+    calc: (values: number[], referenceValues?: number[]) => number;
+    roundDigits: number;
+    diffAplicable: boolean;
+    applicableToReference: boolean;
+    paint: (values: Array<number | null>) => Array<0 | -1 | 1 | null>;
+}
 
-export const calculatingStats: Stat[] = [
+export const calculatingStats: IStat[] = [
         {
             name: 'q50',
-            calc: values => jStat.percentile(values, 0.5),
+            calc: (values) => jStat.percentile(values, 0.5),
             roundDigits: 1,
             diffAplicable: true,
             applicableToReference: true,
             paint: defaultPaint,
         }, {
             name: 'q80',
-            calc: values => jStat.percentile(values, 0.8),
+            calc: (values) => jStat.percentile(values, 0.8),
             roundDigits: 1,
             diffAplicable: true,
             applicableToReference: true,
             paint: defaultPaint,
         }, {
             name: 'q95',
-            calc: values => jStat.percentile(values, 0.95),
+            calc: (values) => jStat.percentile(values, 0.95),
             roundDigits: 1,
             diffAplicable: true,
             applicableToReference: true,
@@ -48,11 +48,11 @@ export const calculatingStats: Stat[] = [
             roundDigits: 3,
             diffAplicable: false,
             applicableToReference: false,
-            paint: arr => arr.map(pVal => {
+            paint: (arr) => arr.map((pVal) => {
                 if (pVal === null) {
                     return null;
                 } else if (pVal < 0.05) {
-                    return 1
+                    return 1;
                 } else if (pVal > 0.4) {
                     return -1;
                 }
@@ -63,10 +63,10 @@ export const calculatingStats: Stat[] = [
     ]
 ;
 
-function defaultPaint(arr: (number|null)[]) {
-    const mean = jStat.mean(arr.filter(item => typeof item === 'number'));
+function defaultPaint(arr: Array<number|null>) {
+    const mean = jStat.mean(arr.filter((item) => typeof item === 'number'));
 
-    return arr.map(item => {
+    return arr.map((item) => {
         if (item === null) {
             return null;
         } else if (item < mean * 0.8) {
@@ -76,5 +76,5 @@ function defaultPaint(arr: (number|null)[]) {
         }
 
         return 0;
-    })
+    });
 }

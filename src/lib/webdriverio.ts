@@ -1,17 +1,23 @@
-import {remote, Options as WDOptions, DesiredCapabilities} from 'webdriverio';
+import {DesiredCapabilities, Options as WDOptions, remote} from 'webdriverio';
 
-import {Options, BrowserProfile, resolveBrowserProfile} from '@/lib/options';
-import {OriginalMetrics} from '@/types';
-import {viewConsole} from '@/lib/view';
+import {IBrowserProfile} from '@/lib/config';
+import {getLogger} from '@/lib/logger';
+import {ICheckOptions, IOriginalMetrics, ISite} from '@/types';
 
+const logger = getLogger();
 
-export async function runWebdriverCheck(site: string, _: number, options: Options): Promise<(OriginalMetrics|null)> {
-    const browserProfile = resolveBrowserProfile(options);
+export async function runWebdriverCheck(
+    site: ISite,
+    _: number,
+    options: ICheckOptions,
+): Promise<(IOriginalMetrics|null)> {
+    const {config} = options;
+    const browserProfile = config.browserProfile;
 
-    const wdOptions = validateWDOptions(options.webdriverOptions);
+    const wdOptions = validateWDOptions(config.webdriverOptions);
 
     if (wdOptions.desiredCapabilities.browserName === 'chrome') {
-        setChromeFlags(wdOptions.desiredCapabilities, browserProfile)
+        setChromeFlags(wdOptions.desiredCapabilities, browserProfile);
     }
 
     const {height, width} = browserProfile;
@@ -20,13 +26,14 @@ export async function runWebdriverCheck(site: string, _: number, options: Option
         const metrics = await remote(wdOptions)
             .init(wdOptions.desiredCapabilities)
             .setViewportSize({width, height})
-            .url(site)
+            // @ts-ignore FIXME Property 'url' does not exist on type 'never'.
+            .url(site.url)
             .execute(getMetricsFromBrowser);
 
         return metrics.value;
 
     } catch (e) {
-        viewConsole.error(e);
+        logger.error(e);
         return null;
     }
 }
@@ -44,7 +51,7 @@ type ValidWDOptions = WDOptions & {
     desiredCapabilities: DesiredCapabilities & {
         browserName: string,
         version: string,
-    }
+    },
 };
 
 function validateWDOptions(options: WDOptions): ValidWDOptions {
@@ -60,7 +67,7 @@ function validateWDOptions(options: WDOptions): ValidWDOptions {
     throw new TypeError('invalid desiredCapabilities object!');
 }
 
-function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile: BrowserProfile) {
+function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile: IBrowserProfile) {
     if (!desiredCapabilities.chromeOptions) {
         desiredCapabilities.chromeOptions = {};
     }
@@ -73,4 +80,3 @@ function setChromeFlags(desiredCapabilities: DesiredCapabilities, browserProfile
         desiredCapabilities.chromeOptions.args.push(`user-agent=${browserProfile.userAgent}`);
     }
 }
-

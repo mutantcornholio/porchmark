@@ -1,68 +1,132 @@
-import {Options} from '@/lib/options';
 import {
-    OriginalMetrics,
-    watchingMetrics,
-    watchingMetricsRealNames
+    IOriginalMetrics,
 } from '@/types';
 
+import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
-import {runPuppeteerCheck} from '@/lib/puppeteer';
+import {indexOfMin, sleep} from '@/lib/helpers';
+import {getLogger} from '@/lib/logger';
+import {close, runPuppeteerCheck} from '@/lib/puppeteer';
+import {getView} from '@/lib/view';
 import {runWebdriverCheck} from '@/lib/webdriverio';
-import {viewConsole, shutdown} from '@/lib/view';
-import {sleep} from '@/lib/helpers';
+
+const logger = getLogger();
+const view = getView();
 
 const workerSet = new Set();
 
+let waitForCompleteInterval: NodeJS.Timeout;
 
-export default async function startWorking(sites: string[], dataProcessor: DataProcessor, options: Options) {
+function waitForComplete(check: () => boolean): Promise<void> {
+    return new Promise((resolve) => {
+        waitForCompleteInterval = setInterval(() => {
+            if (check()) {
+                resolve();
+            }
+        }, 100);
+    });
+}
+
+function clearWaitForComplete() {
+    clearInterval(waitForCompleteInterval);
+}
+
+export default async function startWorking(
+    compareId: number,
+    comparision: IComparison,
+    dataProcessor: DataProcessor,
+    config: IConfig,
+) {
     let workersDone = 0;
-    const runCheck = (options.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
+
+    logger.info(`[startWorking] start: comparison=${comparision.name} id=${compareId}`);
+
+    const runCheck = (config.mode === 'webdriver' ? runWebdriverCheck : runPuppeteerCheck);
+
+    const totalIterationCount = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr
+        ? config.iterations * (compareId + 1)
+        : config.iterations;
+
+    function getNextSiteIndex(): (number|null) {
+        if (dataProcessor.getLeastIterations() >= totalIterationCount) {
+            return null;
+        }
+
+        const totalTests = [];
+        for (let siteIndex = 0; siteIndex < dataProcessor.sites.length; siteIndex++) {
+            totalTests[siteIndex] = dataProcessor.iterations[siteIndex] + dataProcessor.activeTests[siteIndex];
+        }
+
+        return indexOfMin(totalTests);
+    }
 
     // Controls the number of workers, spawns new ones, stops process when everything's done
     async function populateWorkers() {
-        while (workersDone < options.workers) {
-            while(options.workers - workersDone > workerSet.size) {
-                const nextSiteIndex = dataProcessor.getNextSiteIndex();
+        while (workersDone < config.workers) {
+            while (config.workers - workersDone > workerSet.size) {
+                const nextSiteIndex = getNextSiteIndex();
 
                 if (nextSiteIndex === null) {
                     workersDone++;
                     continue;
                 }
 
-                const job = runWorker(nextSiteIndex, sites, options).catch(handleWorkerError);
+                const job = runWorker(nextSiteIndex, comparision, config).catch(handleWorkerError);
 
                 workerSet.add(job);
                 dataProcessor.reportTestStart(nextSiteIndex, job);
 
-                const clearJob = () => {workerSet.delete(job)};
+                const clearJob = () => { workerSet.delete(job); };
                 job.then(clearJob, clearJob);
             }
 
             await Promise.race(Array.prototype.slice.call(workerSet.entries()).concat(sleep(100)));
         }
 
-        shutdown(false);
+        // render last results
+        view.renderTable(dataProcessor.calculateResults());
+
+        logger.info(
+            `[startWorking] complete: comparison=${comparision.name}, id=${compareId}, workersDone=${workersDone}`,
+        );
     }
 
     function handleWorkerError(error: Error): void {
-        viewConsole.error(error);
+        logger.error(error);
     }
 
-    function registerMetrics([originalMetrics, siteIndex]: [OriginalMetrics, number]): void {
+    function registerMetrics([originalMetrics, siteIndex]: [IOriginalMetrics, number]): void {
         const transformedMetrics: number[] = [];
 
-        for (let metricIndex = 0; metricIndex < watchingMetrics.length; metricIndex++) {
-            const metricName = watchingMetricsRealNames[metricIndex];
+        logger.trace(`workerFarm registerMetrics: ${originalMetrics}`);
+
+        for (let metricIndex = 0; metricIndex < config.metrics.length; metricIndex++) {
+            const metricName = config.metrics[metricIndex].name;
+            logger.trace(`workerFarm registerMetrics: ${metricIndex}, ${metricName}, ${originalMetrics[metricName]}`);
             transformedMetrics[metricIndex] = originalMetrics[metricName];
         }
+
+        logger.trace(`workerFarm registerMetrics: transformedMetrics ${transformedMetrics}`);
 
         dataProcessor.registerMetrics(siteIndex, transformedMetrics);
     }
 
-    async function runWorker(siteIndex: number, sites: string[], options: Options): Promise<void> {
+    async function runWorker(
+        siteIndex: number,
+        workerComparision: IComparison,
+        workerConfig: IConfig,
+    ): Promise<void> {
+        const workerSites = workerComparision.sites;
+
         const metrics = await Promise.race([
-            sleep(options.timeout).then(() => {throw new Error(`Timeout on site #${siteIndex}, ${sites[siteIndex]}`)}),
-            runCheck(sites[siteIndex], siteIndex, options)
+            sleep(workerConfig.pageTimeout).then(() => {
+                throw new Error(`Timeout on site #${siteIndex}, ${workerSites[siteIndex].url}`);
+            }),
+            runCheck(workerSites[siteIndex], siteIndex, {
+                comparison: workerComparision,
+                config: workerConfig,
+                compareId,
+            }),
         ]);
 
         if (metrics !== null) {
@@ -70,5 +134,17 @@ export default async function startWorking(sites: string[], dataProcessor: DataP
         }
     }
 
-    populateWorkers().catch(() => {});
+    populateWorkers().catch((error) => {
+        logger.error(error);
+    });
+
+    await waitForComplete(() => {
+        return workersDone >= config.workers;
+    });
+
+    clearWaitForComplete();
+
+    if (config.mode === 'puppeteer') {
+        await close();
+    }
 }
