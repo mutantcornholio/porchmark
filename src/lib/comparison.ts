@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {getLogger} from '@/lib/logger';
@@ -36,6 +38,8 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
         const withWpr = config.mode === 'puppeteer' && config.puppeteerOptions.useWpr;
 
         const comparisonDir = getComparisonDir(config.workDir, comparison);
+
+        await fs.ensureDir(comparisonDir);
 
         if (withWpr) {
             const wprArchives = await getWprArchives(comparisonDir, comparison.sites);
@@ -76,7 +80,5 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
         ]);
 
         logger.info('complete');
-
-        view.shutdown(false);
     }
 }

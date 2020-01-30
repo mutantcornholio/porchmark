@@ -12,7 +12,6 @@ const exampleConfig = {
     puppeteerOptions: {
         headless: true,
         ignoreHTTPSErrors: false,
-        warmIterations: 1,
         useWpr: true,
         recordWprCount: 50,
         selectWprCount: 10,
@@ -87,14 +86,14 @@ const exampleConfig = {
         {name: 'stdev', excludeMetrics: ['transferSize']},
     ],
     hooks: {
-        async onVerifyWpr(logger, page) {
+        async onVerifyWpr({logger, page, comparison, site}) {
             const hasJquery = await page.evaluate(() => !!window.jQuery);
 
             if (!hasJquery) {
                 throw new Error('no jQuery on page, page incorrect');
             }
         },
-        async onCollectMetrics(logger, page) {
+        async onCollectMetrics({logger, page, comparison, site}) {
             const nodesCount = await page.evaluate(() => document.querySelectorAll('*').length);
 
             return {

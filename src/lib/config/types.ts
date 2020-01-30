@@ -18,7 +18,6 @@ export type NetworkProfiles = 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'G
 export interface IPuppeteerOptions {
   headless: boolean;
   ignoreHTTPSErrors: boolean;
-  warmIterations: number;
   useWpr: boolean;
   recordWprCount: number;
   selectWprCount: number;
@@ -70,8 +69,15 @@ export interface IConfigMetricsAggregation {
   excludeMetrics?: string[];
 }
 
-export type VerifyWprHook = (logger: Logger, page: puppeteer.Page) => Promise<void>;
-export type CollectMetricsHook = (logger: Logger, page: puppeteer.Page) => Promise<{[index: string]: number}>;
+export interface IHookObject {
+  logger: Logger;
+  page: puppeteer.Page;
+  comparison: IComparison;
+  site: ISite;
+}
+
+export type VerifyWprHook = (hook: IHookObject) => Promise<void>;
+export type CollectMetricsHook = (hook: IHookObject) => Promise<{[index: string]: number}>;
 
 // TODO node type
 export type PageStructureSizesNodeHook = (sizes: IPageStructureSizes, node: any) => void;

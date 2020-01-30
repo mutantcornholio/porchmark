@@ -21,6 +21,10 @@ export const getWprRecordStderrFilepath = (workDir: string, site: ISite, id: num
     return path.resolve(workDir, `${site.name}-${id}.wpr_record.stderr.log`);
 };
 
+export const getWprRecordScreenshotFilepath = (workerDir: string, site: ISite, id: number) => {
+    return path.resolve(workerDir, `${site.name}-${id}-wpr-record.png`);
+};
+
 export const getWprReplayStdoutFilepath = (workDir: string, site: ISite, id: number, wprArchiveId: number) => {
     return path.resolve(workDir, `${site.name}-${id}-${wprArchiveId}.wpr_replay.stdout.log`);
 };

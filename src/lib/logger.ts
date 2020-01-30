@@ -12,6 +12,15 @@ let loggerInstance: Logger;
 
 export let logfilePath: string | null = null;
 
+let logfileDescriptor: number | null = null;
+
+process.on('beforeExit', function exitHandler(): void {
+    if (logfileDescriptor) {
+        loggerInstance.info('exitHandler call');
+        fs.closeSync(logfileDescriptor);
+    }
+});
+
 export const createLogger = (level: string = 'trace') => {
     const loggerCreator = isInteractive() ? tracer.colorConsole : tracer.console;
 
@@ -28,7 +37,12 @@ export const createLogger = (level: string = 'trace') => {
             viewConsole.info(data.output);
 
             if (logfilePath) {
-                fs.appendFile(logfilePath, data.rawoutput + '\n', (err) => {
+
+                if (!logfileDescriptor) {
+                    logfileDescriptor = fs.openSync(logfilePath, 'a');
+                }
+
+                fs.write(logfileDescriptor, data.rawoutput + '\n', (err) => {
                     if (err) { throw err; }
                 });
             }

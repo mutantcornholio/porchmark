@@ -70,9 +70,21 @@ export async function runPuppeteerCheck(
 
         await page.goto(site.url, {waitUntil: 'networkidle0'});
 
-        const metrics = await getPageMetrics(page);
+        const pageMetrics = await getPageMetrics(page);
+
+        let customMetrics = {};
+
+        if (config.hooks && config.hooks.onCollectMetrics) {
+            logger.info(`[onCollectMetrics hook] collect custom metrics for site ${site.name} (${site.url})`);
+            customMetrics = await config.hooks.onCollectMetrics({logger, page, comparison, site});
+        }
+
         await page.close();
-        return metrics;
+
+        return {
+            ...pageMetrics,
+            ...customMetrics,
+        };
     } catch (e) {
         // This error appears when wpr replay not ready, but browser already open page
         if (/WebSocket is not open/.exec(e.message)) {

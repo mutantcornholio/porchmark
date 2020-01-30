@@ -7,7 +7,7 @@ import {findTwoFreePorts} from '@/lib/findFreePorts';
 import {
     getComparisonDir,
     getPageStructureSizesAfterLoadedFilepath, getPageStructureSizesFilepath,
-    getWprArchiveFilepath,
+    getWprArchiveFilepath, getWprRecordScreenshotFilepath,
     getWprRecordStderrFilepath,
     getWprRecordStdoutFilepath, getWprReplayStderrFilepath, getWprReplayStdoutFilepath,
 } from '@/lib/fs';
@@ -56,21 +56,33 @@ export const createWprReplayProcess = (options: IWprProcessOptions) => {
     return new WprReplay(config);
 };
 
-const openPageWithRetries = async (page: puppeteer.Page, site: ISite, retryCount = 3): Promise<puppeteer.Page> =>  {
+const openPageWithRetries = async (
+    page: puppeteer.Page,
+    site: ISite,
+    retryCount: number,
+    onVerifyWprHook: () => Promise<void>,
+): Promise<puppeteer.Page> =>  {
     let retry = 0;
 
-    while (retry < retryCount) {
+    while (retry <= retryCount) {
         try {
             await page.goto(site.url, {waitUntil: 'networkidle0'});
+
+            if (onVerifyWprHook) {
+                logger.info(`[recordWprArchives] verify page ${site.name} (${site.url}) with onVerifyWpr hook`);
+                await onVerifyWprHook();
+            }
+
             return page;
         } catch (error) {
             retry++;
 
             if (retry > retryCount) {
+                logger.error(`[recordWprArchives] ${retryCount} retries exceed for site ${site.name} (${site.url})`);
                 throw error;
             } else {
                 logger.error(error);
-                logger.warn(`retry page open: ${site.url}`);
+                logger.warn(`[recordWprArchives] retry #${retry} page open: ${site.name} (${site.url})`);
             }
         }
     }
@@ -78,13 +90,19 @@ const openPageWithRetries = async (page: puppeteer.Page, site: ISite, retryCount
     return page;
 };
 
-const fetchPageStructureSizes = (page: Page, site: ISite, filepath: string) => {
-    return openPageWithRetries(page, site)
+const DEFAULT_RETRY_COUNT = 3;
+
+const fetchPageStructureSizes = (
+    {page, site, filepath, onVerifyWprHook}: {
+        page: Page,
+        site: ISite,
+        filepath: string,
+        onVerifyWprHook: () => Promise<void>,
+    },
+) => {
+    return openPageWithRetries(page, site, DEFAULT_RETRY_COUNT, onVerifyWprHook)
         .then(() => getPageStructureSizes(page))
-        .then(
-            (sizes) => fs.writeJson(filepath, sizes),
-        )
-        .then(() => page.close());
+        .then((sizes) => fs.writeJson(filepath, sizes));
 };
 
 export const recordWprArchives = async (comparison: IComparison, config: IConfig): Promise<void> => {
@@ -95,9 +113,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
     // check workDir
     const comparisonDir = getComparisonDir(config.workDir, comparison);
 
-    if (!fs.existsSync(comparisonDir)) {
-        await fs.mkdir(comparisonDir);
-    }
+    await fs.ensureDir(comparisonDir);
 
     const {recordWprCount} = config.puppeteerOptions;
 
@@ -167,13 +183,22 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
 
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = fetchPageStructureSizes(
+            const recordPageWprPromise = fetchPageStructureSizes({
                 page,
                 site,
-                getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id),
-            );
+                filepath: getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id),
+                onVerifyWprHook: () =>
+                    config.hooks && config.hooks.onVerifyWpr
+                        ? config.hooks.onVerifyWpr({logger, page, comparison, site})
+                        : Promise.resolve(),
+            })
+                .then(() => page.screenshot({
+                    fullPage: true,
+                    path: getWprRecordScreenshotFilepath(comparisonDir, site, id),
+                }))
+                .then(() => page.close());
 
-            recordPageWprPromises.push(pageStructureSizesPromise);
+            recordPageWprPromises.push(recordPageWprPromise);
         }
 
         await Promise.all(recordPageWprPromises);
@@ -203,11 +228,13 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             };
             const page = await createPage(browser, pageProfile);
 
-            const pageStructureSizesPromise = fetchPageStructureSizes(
+            const pageStructureSizesPromise = fetchPageStructureSizes({
                 page,
                 site,
-                getPageStructureSizesFilepath(comparisonDir, site, id),
-            );
+                filepath: getPageStructureSizesFilepath(comparisonDir, site, id),
+                onVerifyWprHook: () => Promise.resolve(),
+            })
+                .then(() => page.close());
 
             pageStructureSizesPromises.push(pageStructureSizesPromise);
         }
