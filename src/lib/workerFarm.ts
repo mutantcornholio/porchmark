@@ -98,7 +98,7 @@ export default async function startWorking(
     function registerMetrics([originalMetrics, siteIndex]: [IOriginalMetrics, number]): void {
         const transformedMetrics: number[] = [];
 
-        logger.trace(`workerFarm registerMetrics: ${originalMetrics}`);
+        logger.trace('workerFarm registerMetrics:', siteIndex, originalMetrics);
 
         for (let metricIndex = 0; metricIndex < config.metrics.length; metricIndex++) {
             const metricName = config.metrics[metricIndex].name;

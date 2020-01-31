@@ -69,7 +69,7 @@ const openPageWithRetries = async (
             await page.goto(site.url, {waitUntil: 'networkidle0'});
 
             if (onVerifyWprHook) {
-                logger.info(`[recordWprArchives] verify page ${site.name} (${site.url}) with onVerifyWpr hook`);
+                logger.trace(`[recordWprArchives] verify page ${site.name} (${site.url}) with onVerifyWpr hook`);
                 await onVerifyWprHook();
             }
 
@@ -173,7 +173,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             const site = sites[siteIndex];
             const browser = browsers[siteIndex];
 
-            logger.info(`[recordWprArchives] record wpr archive for ${site.name}`);
+            logger.trace(`[recordWprArchives] record wpr archive for ${site.name}`);
 
             const pageProfile = preparePageProfile(config);
 
@@ -218,7 +218,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
             const site = sites[siteIndex];
             const browser = browsers[siteIndex];
 
-            logger.info(`[recordWprArchives] get page structure sizes for ${site.name}`);
+            logger.trace(`[recordWprArchives] get page structure sizes for ${site.name}`);
 
             const pageProfile: IPageProfile = {
                 ...preparePageProfile(config),
