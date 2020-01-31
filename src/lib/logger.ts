@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import {isInteractive} from '@/lib/helpers';
+import {isInteractive as getIsInteractive} from '@/lib/helpers';
 import * as fs from 'fs';
 import * as tracer from 'tracer';
 
@@ -28,7 +28,8 @@ process.on('beforeExit', function handleBeforeExit() {
 });
 
 export const createLogger = (level: string = 'trace') => {
-    const loggerCreator = isInteractive() ? tracer.colorConsole : tracer.console;
+    const isInteractive = getIsInteractive();
+    const loggerCreator = isInteractive ? tracer.colorConsole : tracer.console;
 
     return loggerCreator({
         level,
@@ -40,10 +41,13 @@ export const createLogger = (level: string = 'trace') => {
         ],
         dateformat: 'HH:MM:ss.L',
         transport(data) {
+            if (!isInteractive) {
+                process.stderr.write(data.rawoutput + '\n');
+            }
+
             viewConsole.info(data.output);
 
             if (logfilePath) {
-
                 if (!logfileDescriptor) {
                     logfileDescriptor = fs.openSync(logfilePath, 'a');
                 }
@@ -52,7 +56,6 @@ export const createLogger = (level: string = 'trace') => {
                     if (err) { throw err; }
                 });
             }
-
         },
     });
 };
