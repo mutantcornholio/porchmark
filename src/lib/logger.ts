@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 import {isInteractive} from '@/lib/helpers';
 import * as fs from 'fs';
 import * as tracer from 'tracer';
@@ -10,15 +12,19 @@ export type Logger = tracer.Tracer.Logger;
 
 let loggerInstance: Logger;
 
-export let logfilePath: string | null = null;
+export let logfilePath: string = path.resolve(process.cwd(), 'porchmark.log');
 
 let logfileDescriptor: number | null = null;
 
-process.on('beforeExit', function exitHandler(): void {
-    if (logfileDescriptor) {
-        loggerInstance.info('exitHandler call');
-        fs.closeSync(logfileDescriptor);
+function closeFileDescriptor(descriptor: number | null): void {
+    if (descriptor) {
+        fs.closeSync(descriptor);
     }
+}
+
+process.on('beforeExit', function handleBeforeExit() {
+    loggerInstance.info('exitHandler call');
+    closeFileDescriptor(logfileDescriptor);
 });
 
 export const createLogger = (level: string = 'trace') => {
@@ -52,7 +58,9 @@ export const createLogger = (level: string = 'trace') => {
 };
 
 export function setLogfilePath(filepath: string) {
+    closeFileDescriptor(logfileDescriptor);
     logfilePath = filepath;
+    logfileDescriptor = fs.openSync(logfilePath, 'a');
 }
 
 export function setLogger(logger: Logger) {
