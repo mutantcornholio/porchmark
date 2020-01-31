@@ -53,6 +53,9 @@ const schema = joi.object().required().keys({
                                                       //                    ! slow down comparison speed
                                                       //                    because use puppeteer request interception
         pageNavigationTimeout: joi.number().integer().min(0).default(60000),
+
+        // puppeteer waitUntil option for page.open
+        waitUntil: joi.string().required().valid('load', 'domcontentloaded', 'networkidle0', 'networkidle2'),
     }),
     webdriverOptions: joi.object().keys({
         host: joi.string().required(),
