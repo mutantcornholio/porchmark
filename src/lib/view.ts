@@ -99,7 +99,7 @@ class TableView {
     }
 
     public init = () => {
-        if (this.config.silent) {
+        if (this.config.withoutUi) {
             return;
         }
 
@@ -127,7 +127,7 @@ class TableView {
         iterations: number[],
         activeTests: number[],
     }) => {
-        if (this.config.silent) {
+        if (this.config.withoutUi) {
             return;
         }
 
@@ -198,7 +198,7 @@ class TableView {
     }
 
     public shutdown = (errorHappened: boolean) => {
-        if (!this.config.silent) {
+        if (!this.config.withoutUi) {
             this.screen.destroy();
 
             if (this.tableText) {

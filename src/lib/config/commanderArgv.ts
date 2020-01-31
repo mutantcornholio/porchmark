@@ -85,7 +85,7 @@ export async function resolveConfig(commanderArgv: Command): Promise<IConfig> {
     initBrowserProfile(config);
 
     if (!isInteractive()) {
-        config.silent = true;
+        config.withoutUi = true;
     }
 
     normalizeMetrics(config);
