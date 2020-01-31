@@ -75,7 +75,7 @@ export async function runPuppeteerCheck(
         let customMetrics = {};
 
         if (config.hooks && config.hooks.onCollectMetrics) {
-            logger.info(`[onCollectMetrics hook] collect custom metrics for site ${site.name} (${site.url})`);
+            logger.trace(`[onCollectMetrics hook] collect custom metrics for site ${site.name} (${site.url})`);
             customMetrics = await config.hooks.onCollectMetrics({logger, page, comparison, site});
         }
 
