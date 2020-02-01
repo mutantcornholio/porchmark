@@ -68,7 +68,7 @@ export async function runPuppeteerCheck(
         const pageProfile = preparePageProfile(config);
         const page = await createPage(bro, pageProfile);
 
-        await page.goto(site.url, {waitUntil: 'networkidle0'});
+        await page.goto(site.url, {waitUntil: config.puppeteerOptions.waitUntil});
 
         const pageMetrics = await getPageMetrics(page);
 

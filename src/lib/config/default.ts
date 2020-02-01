@@ -22,6 +22,7 @@ export default (): IConfig => ({
         cpuThrottling: null,
         networkThrottling: null,
         pageNavigationTimeout: 60000,
+        waitUntil: 'load',
     },
     webdriverOptions: {
         host: 'localhost',
