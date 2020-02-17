@@ -56,6 +56,7 @@ const schema = joi.object().required().keys({
 
         // puppeteer waitUntil option for page.open
         waitUntil: joi.string().required().valid('load', 'domcontentloaded', 'networkidle0', 'networkidle2'),
+        retryCount: joi.number().integer().min(0).default(10),
     }),
     webdriverOptions: joi.object().keys({
         host: joi.string().required(),

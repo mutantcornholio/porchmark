@@ -90,17 +90,16 @@ const openPageWithRetries = async (
     return page;
 };
 
-const DEFAULT_RETRY_COUNT = 3;
-
 const fetchPageStructureSizes = (
-    {page, site, filepath, onVerifyWprHook}: {
+    {page, site, filepath, onVerifyWprHook, retryCount}: {
         page: Page,
         site: ISite,
         filepath: string,
         onVerifyWprHook: () => Promise<void>,
+        retryCount: number,
     },
 ) => {
-    return openPageWithRetries(page, site, DEFAULT_RETRY_COUNT, onVerifyWprHook)
+    return openPageWithRetries(page, site, retryCount, onVerifyWprHook)
         .then(() => getPageStructureSizes(page))
         .then((sizes) => fs.writeJson(filepath, sizes));
 };
@@ -187,6 +186,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
                 page,
                 site,
                 filepath: getPageStructureSizesAfterLoadedFilepath(comparisonDir, site, id),
+                retryCount: config.puppeteerOptions.retryCount,
                 onVerifyWprHook: () =>
                     config.hooks && config.hooks.onVerifyWpr
                         ? config.hooks.onVerifyWpr({logger, page, comparison, site})
@@ -232,6 +232,7 @@ export const recordWprArchives = async (comparison: IComparison, config: IConfig
                 page,
                 site,
                 filepath: getPageStructureSizesFilepath(comparisonDir, site, id),
+                retryCount: config.puppeteerOptions.retryCount,
                 onVerifyWprHook: () => Promise.resolve(),
             })
                 .then(() => page.close());
