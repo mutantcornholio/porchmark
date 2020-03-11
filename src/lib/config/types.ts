@@ -32,6 +32,7 @@ export interface IPuppeteerOptions {
   cssFilesEnabled: boolean;
   pageNavigationTimeout: number;
   waitUntil: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
+  retryCount: number;
 }
 
 export interface IWebdriverOptions {
