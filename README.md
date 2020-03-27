@@ -21,7 +21,7 @@ To run porchmark in webdriver mode You'll have to make a config file (just copy 
 
 CLI args:
 ```
-    Usage: porchmark <site 1> <site 2> ...
+    Usage: porchmark compare <site 1> <site 2> ...
 
     Options:
       -V, --version                 output the version number
@@ -31,34 +31,200 @@ CLI args:
       -k, --insecure                ignore HTTPS errors
       -t, --timeout <n>             timeout in seconds for each check; defaults to 20s
       -c  --config [configfile.js]  path to config; default is `porchmark.conf.js` in current dir
+      -v, --verbose                 verbose logging, -v (debug), -vv (trace)
       -h, --help                    output usage information
 ```
 
 Config file:
 ```js
 module.exports = {
-  maxIterations: 500,
-  workers: 50,
-  mobile: false,
-  insecure: false,
-  mode: 'webdriver', // other one is 'puppeteer'
-  webdriverOptions: { // your selenium grid address and credentials.
-    host: 'your-grid-address.sh',
-    port: 4444,
-    user : 'selenium',
-    key: 'selenium',
-    desiredCapabilities: {
-      'browserName': 'chrome',
-      'version': '65.0',
+    // log level - 'trace', 'debug', 'info', 'warn', 'error', 'fatal'
+    logLevel: 'info',
+    // workdir for comparison files (screenshots, WPR-archives, etc)
+    // by default is current work dir (cwd)
+    workDir: `${__dirname}/some-workdir`,
+    // mode - 'puppeteer' or 'webdriver'
+    mode: 'puppeteer',
+    // how many iterations run for every comparison (and every WPR for puppeteer mode)
+    iterations: 70,
+    // how many parallel workers
+    workers: 1,
+    // page open timeout
+    pageTimeout: 90,
+    // disable terminal table UI
+    withoutUi: false,
+
+    // options for puppeteer mode
+    puppeteerOptions: {
+        // run browser headless or not
+        headless: true,
+
+        // ignore https errors - useful for custom ssl certificates
+        ignoreHTTPSErrors: false,
+
+        // use Web Page Replay (WPR) archives - https://bit.ly/2JgTUbt
+        useWpr: true,
+
+        // how many WPR archives record
+        recordWprCount: 50,
+
+        // how many WPR archive pairs select for every comparison
+        selectWprCount: 10,
+
+        // method for WPR archive selection
+        // - simple - select WPRs in recorded order
+        // - closestByWprSize - select WPR pairs by WPR archive size, with minimal diff by size
+        // - closestByHtmlSize - select WPRs by html size from server, this is default
+        // - closestByScriptSize - select WPRs by script size from server
+        selectWprMethod: 'closestByHtmlSize',
+
+        // enable/disable browser cache on page open
+        cacheEnabled: false,
+
+        // cpu throttling
+        cpuThrottling: {
+            rate: 4,
+        },
+
+        // network throttling
+        // 'GPRS', 'Regular2G', 'Good2G', 'Regular3G', 'Good3G', 'Regular4G', 'DSL', 'WiFi'
+        networkThrottling: 'Regular2G',
+
+        // enable/disable load images
+        imagesEnabled: true,
+
+        // enable/disable javascript on page
+        javascriptEnabled: true,
+
+        // enable/disable css files
+        // this work with puppeteer request interceptions and may slow down comparison
+        cssFilesEnabled: true,
+        
+        // puppeteer page navigation timeout
+        pageNavigationTimeout: 60000,
+           
+        // puppeteer waitUntil page open 
+        // 'load', 'domcontentloaded', 'networkidle0', 'networkidle2'
+        waitUntil:  'load',
+
+        // retry count if WPR record fails
+        retryCount: 10,
     },
-  },
-  browserProfile: { // on top of built-in 'desktop' and 'mobile' profiles, you can overwrite User-Agent
-                    // or viewport size; this poor list will be updated soon
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)' +
-        ' Chrome/60.0.3112.113 Safari/537.36',
-    height: 1920,
-    width: 1080,
-  },
+
+    // webdriver options
+    webdriverOptions: {
+        host: 'your-grid-address.sh',
+        port: 4444,
+        user : '',
+        key: '',
+        desiredCapabilities: {
+            'browserName': 'chrome',
+            'version': '65.0',
+        },
+    },
+
+    // browser profile
+    browserProfile: {
+        // emulate mobile useragent and viewport
+        mobile: false,
+
+        // set useragent
+        userAgent: 'your-user-agent',
+
+        // viewport height
+        height: 600,
+
+        // viewport width
+        width: 800,
+    },
+
+    // setup comparisons with array
+    comparisons: [
+        {
+            // uniq comparison name
+            name: 'main',
+
+            sites: [
+                {
+                    // uniq site name
+                    name: 'production',
+                    // url
+                    url: 'https://host1.ru'
+                },
+                {
+                    name: 'prestable',
+                    url: 'https://host2.ru'
+                },
+            ],
+        },
+        // ...
+    ],
+    stages: {
+        // run record WPR stage
+        recordWpr: true,
+
+        // run comparison metrics
+        compareMetrics: true,
+    },
+
+    // metrics for collect
+    metrics: [
+        {name: 'requestStart'},
+        {name: 'responseStart', title: 'TTFB'},
+        {name: 'responseEnd', title: 'TTLB'},
+        {name: 'first-paint'},
+        {name: 'first-contentful-paint', title: 'FCP'},
+        {name: 'domContentLoadedEventEnd', title: 'DCL'},
+        {name: 'loadEventEnd', title: 'loaded'},
+        {name: 'domInteractive'},
+        {name: 'domComplete'},
+        {name: 'transferSize'},
+        {name: 'encodedBodySize'},
+        {name: 'decodedBodySize'},
+    ],
+
+    // metric aggregations
+    metricAggregations: [
+        {
+            name: 'count',
+            includeMetrics: ['requestStart']
+        }, // apply aggregation only for requestStart metric
+        {name: 'q50'},
+        {name: 'q80'},
+        {name: 'q95'},
+        {
+            name: 'stdev',
+            excludeMetrics: ['transferSize']
+        },
+    ],
+
+    //
+    hooks: {
+
+        // verify page on WPR record - throw error if not valid
+        async onVerifyWpr({logger, page, comparison, site}) {
+            const hasJquery = await page.evaluate(
+                () => !!window.jQuery
+            );
+
+            if (!hasJquery) {
+                throw new Error(
+                    'no jQuery on page, page incorrect'
+                );
+            }
+        },
+
+        // collect and return custom metrics from page
+        async onCollectMetrics({logger, page, comparison, site}) {
+            const nodesCount = await page.evaluate(
+                () => document.querySelectorAll('*').length
+            );
+
+            return {
+                nodesCount,
+            };
+        },
+    },
 };
 
 ```
