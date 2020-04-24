@@ -473,7 +473,7 @@ export class DataProcessor {
             case 'q80':
                 return jstat.percentile(metrics, 0.8);
             case 'q95':
-                return jstat.percentile(metrics, 0.9);
+                return jstat.percentile(metrics, 0.95);
             case 'stdev':
                 return jstat.stdev(metrics, true);
             case 'count':
