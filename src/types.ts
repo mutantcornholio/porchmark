@@ -23,3 +23,5 @@ export interface ICheckOptions {
     comparison: IComparison;
     config: IConfig;
 }
+
+export declare function assertNonNull<T>(obj: T): asserts obj is NonNullable<T>;

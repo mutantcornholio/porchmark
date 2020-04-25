@@ -5,6 +5,8 @@ import {getLogger} from '@/lib/logger';
 
 import {IWprConfig, IWprProcess} from '@/lib/wpr/types';
 
+import {assertNonNull} from '@/types';
+
 export type BuildCmd = (wprConfig: IWprConfig, inputWprFilepath: string) => {command: string, args: string[]};
 
 const logger = getLogger();
@@ -53,7 +55,11 @@ export default abstract class WprAbstract implements IWprProcess {
 
         logger.debug(`started ${this._name} process: pid=${this._process.pid}`);
 
+        // ChildProcess's stdout and stderr might be null if spawned with stdio other then `pipe`.
+        // not this case
+        assertNonNull(this.process.stdout);
         this.process.stdout.pipe(fs.createWriteStream(stdoutFilepath));
+        assertNonNull(this.process.stderr);
         this.process.stderr.pipe(fs.createWriteStream(stderrFilepath));
     }
 
