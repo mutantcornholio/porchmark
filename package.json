@@ -1,6 +1,6 @@
 {
   "name": "porchmark",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "Simple tool to compare browser performance of several sites simultaneously",
   "scripts": {
     "build": "tsc && npm run updateTscPaths",
