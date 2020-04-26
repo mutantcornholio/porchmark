@@ -32,6 +32,7 @@
   },
   "exclude": [
     "porchmark.conf.js",
+    "jest.config.js",
     "node_modules",
     "dist",
     "types",
