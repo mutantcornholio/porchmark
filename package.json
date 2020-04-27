@@ -9,9 +9,9 @@
     "prepare": "npm run build",
     "install": "node install.js",
     "lint": "tslint --project .",
-    "ci:check": "npm run build && npm run lint",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "ci:check": "npm run build && npm run lint && npm run test",
+    "test": "jest --no-cache",
+    "test:watch": "jest --watch --no-cache",
     "clean": "rm -rf dist"
   },
   "bin": "dist/bin/porchmark.js",
@@ -59,7 +59,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build && npm run lint"
+      "pre-commit": "npm run build && npm run lint && npm run test"
     }
   }
 }

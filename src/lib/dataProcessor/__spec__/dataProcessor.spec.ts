@@ -1,7 +1,7 @@
 import { IComparison, IConfig } from '@/lib/config';
 import getDefaultConfig from '@/lib/config/default';
 import { DataProcessor } from '..';
-import { humanReportResult, jsonReportResult, rawMetrics, sites } from './mock';
+import { jsonReportResult, rawMetrics, sites } from './mock';
 
 jest.mock('@/lib/logger', () => ({
     getLogger: jest.fn().mockImplementation(() => ({
@@ -26,17 +26,11 @@ describe('DataProcessor:', () => {
         prepareDataInDataProcessor(dataProccessor);
     });
 
-    describe('calcReports', () => {
-        it('human report', async () => {
-            const {humanReport} = await dataProccessor.calcReports(sites);
+    describe('calcReport', () => {
+        it ('prepare raw json report', async () => {
+            const report = await dataProccessor.calcReport(sites);
 
-            expect(humanReport).toEqual(humanReportResult);
-        });
-
-        it('json report', async () => {
-            const {jsonReport} = await dataProccessor.calcReports(sites);
-
-            expect(jsonReport).toEqual(jsonReportResult);
+            expect(report).toEqual(jsonReportResult);
         });
     });
 });

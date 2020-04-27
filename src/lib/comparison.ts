@@ -3,8 +3,9 @@ import fs from 'fs-extra';
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
 import {getLogger} from '@/lib/logger';
+import {HumanReport, JsonReport, saveReports} from '@/lib/report';
 
-import {getComparisonDir, saveHumanReport, saveJsonReport} from '@/lib/fs';
+import {getComparisonDir} from '@/lib/fs';
 import {getView} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
@@ -72,12 +73,18 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
 
         logger.info('save reports');
 
-        const {humanReport, jsonReport} = await dataProcessor.calcReports(comparison.sites);
+        const jsonRawReport = await dataProcessor.calcReport(comparison.sites);
 
-        await Promise.all([
-            saveJsonReport(comparisonDir, jsonReport, 'total'),
-            saveHumanReport(comparisonDir, humanReport, 'total'),
-        ]);
+        await saveReports({
+            jsonRawReport,
+            config,
+            id: 'total',
+            workDir: comparisonDir,
+            reporters: [
+                HumanReport,
+                JsonReport,
+            ],
+        });
 
         logger.info('complete');
     }
