@@ -1,11 +1,9 @@
 import {ChildProcess, spawn} from 'child_process';
 import * as fs from 'fs';
 
+import {assertNonNull} from '@/lib/helpers';
 import {getLogger} from '@/lib/logger';
-
 import {IWprConfig, IWprProcess} from '@/lib/wpr/types';
-
-import {assertNonNull} from '@/types';
 
 export type BuildCmd = (wprConfig: IWprConfig, inputWprFilepath: string) => {command: string, args: string[]};
 
