@@ -34,12 +34,6 @@ export class ChartReport implements IReport {
     }
 
     prepareData(config: IConfig, data: IJsonRawReport) {
-        const body = html`
-            <svg viewBox="0 0 300 300" style="max-width: 600px; max-heigth: 600px; font: 10px mono; display: block; border: 1px solid black">
-                <rect fill="steelblue" x=0 y=100 width=100 height=100 />
-            </svg
-        `;
-
         const doc = (new JSDOM()).window.document;
         const body2 = d3.select(doc.body)
             .append('svg')

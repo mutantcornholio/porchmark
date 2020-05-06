@@ -10,6 +10,7 @@
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
+        "noUnusedLocals": true,
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,
         "noImplicitThis": true,
@@ -23,8 +24,6 @@
             ]
         },
         "esModuleInterop": true,
-        "sourceRoot": "src",
-        "inlineSourceMap": true,
         "typeRoots": [
             "./types",
             "./node_modules/@types"
@@ -35,7 +34,7 @@
         "types/**/*"
     ],
     "exclude": [
-        "src/**/*.spec.ts",
+        "src/**/__spec__/**/*",
         "jest.config.js",
         "node_modules",
         "dist",

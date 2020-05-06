@@ -53,7 +53,7 @@ export class AggregationBarChart {
     ) {
         const chart = this.chart;
         const config = this.config;
-        const {aggregations, metricName, sites} = data;
+        const {aggregations, sites} = data;
         const margin = {top: 30, right: 0, bottom: 30, left: 60};
 
         const values: number[] = Object

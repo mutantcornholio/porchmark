@@ -1,0 +1,8 @@
+src/
+types/
+jest.config.js
+tsconfig.json
+
+.vscode/
+.github/
+html-report-*.html

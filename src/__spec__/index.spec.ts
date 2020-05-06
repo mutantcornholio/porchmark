@@ -1,5 +1,3 @@
-import * as index from '..';
-
 import {ChartReport} from '../chartReport';
 import config from './config.mock';
 import rawReport from './jsonRawReport.mock';
