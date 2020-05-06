@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 // https://stackoverflow.com/a/11301464/1958334
 export function indexOfMin(arr: number[]) {
     if (arr.length === 0) {
@@ -45,4 +47,8 @@ export function stdoutRect(): [number, number] {
 
 export function isInteractive(): boolean {
     return Boolean(process.stdout && process.stdout.isTTY && process.env.TERM !== 'dumb');
+}
+
+export function assertNonNull<T>(obj: T): asserts obj is NonNullable<T> {
+    assert.notEqual(obj, null);
 }
