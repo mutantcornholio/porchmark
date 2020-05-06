@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "declaration": true,
         "target": "ES2017",
         "module": "commonjs",
         "allowJs": true,
@@ -25,19 +26,16 @@
         },
         "esModuleInterop": true,
         "typeRoots": [
-            "./types",
-            "./node_modules/@types"
+            "./node_modules/@types",
         ]
     },
     "include": [
         "src/**/*",
-        "types/**/*"
     ],
     "exclude": [
         "src/**/__spec__/**/*",
         "jest.config.js",
         "node_modules",
         "dist",
-        "types"
     ]
 }

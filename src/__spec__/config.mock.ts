@@ -1,4 +1,4 @@
-import { IConfig } from 'porchmark';
+import { IConfig } from '../types/porchmark';
 
 export default <IConfig>({
     mode: 'puppeteer',

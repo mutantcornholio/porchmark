@@ -1,15 +1,17 @@
 {
   "name": "porchmark-pretty-reporter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple charts and other stuff for porchmark",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc-watch",
     "test": "jest --no-cache",
-    "test:watch": "jest --watch --no-cache"
+    "test:watch": "jest --watch --no-cache",
+    "prepublish": "npm run build"
   },
   "bin": "dist/porchmark-pretty-report.js",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/re-gor/porchmark-pretty-reporter.git"

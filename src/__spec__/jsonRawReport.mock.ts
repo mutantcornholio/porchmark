@@ -1,4 +1,4 @@
-import { IJsonRawReport } from 'porchmark';
+import { IJsonRawReport } from '../types/porchmark';
 
 export default <IJsonRawReport>({
     "sites": [

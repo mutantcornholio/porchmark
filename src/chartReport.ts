@@ -1,5 +1,6 @@
-import fs from 'fs';
-import { IReport, IJsonRawReport, IConfig } from 'porchmark';
+import {promises as fs} from 'fs';
+import path from 'path';
+import { IReport, IJsonRawReport, IConfig } from './types/porchmark';
 import * as d3 from 'd3';
 import { JSDOM } from 'jsdom';
 import { html } from './lib/template';
@@ -105,7 +106,7 @@ export class ChartReport implements IReport {
         });
     }
 
-    saveToFs(workDir: string, id: string) {
-        fs.writeFileSync(`html-report-${id}.html`, this.result);
+    async saveToFs(workDir: string, id: string) {
+        await fs.writeFile(path.resolve(workDir, `html-report-${id}.html`), this.result);
     }
 }

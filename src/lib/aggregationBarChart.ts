@@ -1,4 +1,4 @@
-import { ISite } from 'porchmark';
+import { ISite } from '../types/porchmark';
 import * as d3 from 'd3';
 import {createSvg} from './utils';
 
