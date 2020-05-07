@@ -9,8 +9,9 @@
     "prepare": "npm run build",
     "install": "node install.js",
     "lint": "tslint --project .",
-    "ci:check": "npm run build && npm run lint",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "ci:check": "npm run build && npm run lint && npm run test",
+    "test": "jest --no-cache",
+    "test:watch": "jest --watch --no-cache",
     "clean": "rm -rf dist"
   },
   "bin": "dist/bin/porchmark.js",
@@ -42,12 +43,15 @@
     "@types/cli-table2": "^0.2.2",
     "@types/fs-extra": "^8.0.1",
     "@types/hapi__joi": "^16.0.3",
+    "@types/jest": "^25.2.1",
     "@types/lodash": "^4.14.117",
     "@types/node": "^12.12.6",
     "@types/puppeteer": "^2.0.0",
     "@types/traverse": "^0.6.32",
     "@types/webdriverio": "^4.13.0",
     "husky": "^3.1.0",
+    "jest": "^25.4.0",
+    "ts-jest": "^25.4.0",
     "tsc-watch": "^4.0.0",
     "tscpaths": "0.0.9",
     "tslint": "^5.20.1",
@@ -55,7 +59,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build && npm run lint"
+      "pre-commit": "npm run build && npm run lint && npm run test"
     }
   }
 }

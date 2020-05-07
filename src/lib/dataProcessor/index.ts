@@ -6,6 +6,7 @@ import colors from 'colors/safe';
 import jstat from 'jstat';
 
 import {getLogger} from '@/lib/logger';
+import {IJsonRawReport, IJsonRawReportData, IMetric } from '@/types';
 
 const logger = getLogger();
 
@@ -20,43 +21,10 @@ type Iterations = number[];
 type ActiveTests = number[];
 type StatArrays = Array<number|null>[][];
 
-export interface IMetric {
-    name: string;
-    title?: string;
-}
+export {IJsonRawReportData as IJsonReportData, IJsonRawReport as IJsonReport, IMetric};
 
 export interface IMetrics {
     [index: string]: number[];
-}
-
-export interface IHumanReport {
-    headers: string[];
-    data: (string)[][];
-    rawData: (number | string)[][];
-}
-
-export interface IJsonReportData {
-    metrics: {
-        [index: string]: {  // key=metric, {DCL: {"q80": {"test1": 99, "test2": 100, "test3": 200}}
-            [index: string]: { // key=aggregation
-                [index: string]: number; // key=site name, value = metric value
-            };
-        };
-    };
-    diffs: {
-        [index: string]: { // key=metric, example {DCL: {"q80": {"test2": -12, "test3": 10}}
-            [index: string]: { // key=aggregation
-                [index: string]: number; // key=site name, value: diff with first site metric
-            },
-        },
-    };
-}
-
-export interface IJsonReport {
-    sites: ISite[];
-    metrics: IMetric[];
-    metricAggregations: IConfigMetricsAggregation[];
-    data: IJsonReportData;
 }
 
 export class DataProcessor {
@@ -345,39 +313,22 @@ export class DataProcessor {
         return Math.min(...this.iterations);
     }
 
-    public async calcReports(sites: ISite[]) {
+    public async calcReport(sites: ISite[]) {
         const siteNames = sites.map((site) => site.name);
-        const headers = [
-            'metric',
-            'func',
-            ...siteNames,
-            // diff headers (diff0-${siteIndex}): diff0-1, diff0-2
-            ...siteNames.filter((_, index) => index > 0).map((_, index) => `diff0-${index + 1}`),
-            'p-value',
-        ];
-
-        const humanReport: IHumanReport = {
-            headers,
-            data: [],
-            rawData: [],
-        };
-
-        const jsonReportData: IJsonReportData = {
+        const jsonReportData: IJsonRawReportData = {
             metrics: {},
             diffs: {},
+            allMetrics: {},
         };
 
         for (const metric of this.config.metrics) {
             const metricName = metric.name;
-            const metricTitle = metric.title ? metric.title : metric.name;
 
             jsonReportData.metrics[metricName] = {};
             jsonReportData.diffs[metricName] = {};
+            jsonReportData.allMetrics[metricName] = {};
 
             for (const aggregation of this.config.metricAggregations) {
-                const rawRow: (number | string)[] = [metricTitle, aggregation.name];
-                const row: string[] = [metricTitle, aggregation.name];
-
                 if (aggregation.includeMetrics && !aggregation.includeMetrics.includes(metricName)) {
                     logger.trace(`includeMetrics: skip aggregation=${aggregation.name} for metric=${metricName}`);
                     continue;
@@ -391,22 +342,16 @@ export class DataProcessor {
                 jsonReportData.metrics[metricName][aggregation.name] = {};
                 jsonReportData.diffs[metricName][aggregation.name] = {};
 
-                const allSitesMetrics = [];
-
                 const values: number[] = [];
 
                 for (const siteName of siteNames) {
                     const metricValues = this._getSiteMetric(siteName, metricName);
-                    allSitesMetrics.push(metricValues);
+                    jsonReportData.allMetrics[metricName][siteName] = metricValues;
 
                     logger.trace(`metricValues: ${metricName}, ${metricValues}`);
 
                     const aggregated = this._calcAggregation(aggregation, metricName, metricValues);
                     jsonReportData.metrics[metricName][aggregation.name][siteName] = aggregated;
-                    rawRow.push(aggregated);
-
-                    const fixedNumber = this._toFixedNumber(aggregated);
-                    row.push(fixedNumber);
 
                     values.push(aggregated);
                 }
@@ -420,36 +365,18 @@ export class DataProcessor {
                     const diff = value - values[0];
 
                     jsonReportData.diffs[metricName][aggregation.name][sites[index].name] = diff;
-
-                    row.push(`${this._getSign(diff)}${this._toFixedNumber(diff)}`);
                 });
-
-                // calc p-value
-                const pval = jstat.anovaftest(...allSitesMetrics);
-                rawRow.push(pval);
-                row.push(this._toFixedNumber(pval));
-
-                humanReport.rawData.push(rawRow);
-                humanReport.data.push(row);
             }
         }
 
-        const jsonReport: IJsonReport = {
+        const jsonReport: IJsonRawReport = {
             sites,
-            metrics: this.config.metrics,
+            metrics: this.config.metrics.map((m) => ({title: m.title, name: m.name})),
             metricAggregations: this.config.metricAggregations,
             data: jsonReportData,
         };
 
-        return {humanReport, jsonReport};
-    }
-
-    protected _toFixedNumber(i: number): string {
-        return typeof i === 'number' ? i.toFixed(2) : '-';
-    }
-
-    protected _getSign(i: number): string {
-        return i > 0 ? '+' : '';
+        return jsonReport;
     }
 
     protected _getSiteMetric(siteName: string, metricName: string): number[] {

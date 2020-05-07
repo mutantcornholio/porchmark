@@ -68,5 +68,11 @@ typings/
 # Jetbrains
 .idea
 
+# visual studio code
+.vscode
+
 # wpr downloaded
 /wpr
+
+# Result of comparision
+/compare
