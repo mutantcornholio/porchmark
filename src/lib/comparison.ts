@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import {ChartReport} from 'porchmark-pretty-reporter';
 
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
@@ -83,6 +84,7 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
             reporters: [
                 HumanReport,
                 JsonReport,
+                ChartReport,
             ],
         });
 
