@@ -1,6 +1,5 @@
 import { IConfig } from '@/lib/config';
-import { IJsonRawReport } from '@/lib/dataProcessor/iJsonReport';
-import { IReport } from './iReport';
+import { IJsonRawReport, IReport } from '@/types';
 
 type Class<T> = new () => T;
 

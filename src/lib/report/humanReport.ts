@@ -1,10 +1,10 @@
 import { IConfig } from '@/lib/config';
 import { IJsonReport } from '@/lib/dataProcessor';
+import { IReport } from '@/types';
 import cTable = require('console.table');
 import * as fs from 'fs-extra';
 import jstat from 'jstat';
 import * as path from 'path';
-import { IReport } from './iReport';
 
 export interface IHumanReport {
     headers: string[];

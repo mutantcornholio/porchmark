@@ -1,9 +1,8 @@
 import { IConfig, IConfigMetricsAggregation } from '@/lib/config';
-import { IJsonRawReport, IMetric } from '@/lib/dataProcessor/iJsonReport';
-import { ISite } from '@/types';
+import { IJsonRawReport, IMetric } from '@/types';
+import { IReport, ISite } from '@/types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IReport } from './iReport';
 
 interface IJsonReportData {
     metrics: {

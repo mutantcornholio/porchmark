@@ -1,6 +1,6 @@
 /* tslint:disable */
 
-import { IJsonRawReport } from "../iJsonReport";
+import { IJsonRawReport } from '@/types';
 
 export const sites = [
   {

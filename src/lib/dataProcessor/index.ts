@@ -6,7 +6,7 @@ import colors from 'colors/safe';
 import jstat from 'jstat';
 
 import {getLogger} from '@/lib/logger';
-import {IJsonRawReport, IJsonRawReportData, IMetric } from './iJsonReport';
+import {IJsonRawReport, IJsonRawReportData, IMetric } from '@/types';
 
 const logger = getLogger();
 
