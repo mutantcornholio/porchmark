@@ -69,7 +69,7 @@ export default abstract class WprAbstract implements IWprProcess {
 
     public async kill() {
         logger.debug(`killing ${this._name} process: pid=${this.process.pid}`);
-        return this.process.kill();
+        await this.process.kill();
     }
 
     public onClose(cb: (code: number) => void) {
