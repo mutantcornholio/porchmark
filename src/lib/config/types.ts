@@ -33,6 +33,7 @@ export interface IPuppeteerOptions {
   pageNavigationTimeout: number;
   waitUntil: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
   retryCount: number;
+  warmIterations: number;
 }
 
 export interface IWebdriverOptions {
