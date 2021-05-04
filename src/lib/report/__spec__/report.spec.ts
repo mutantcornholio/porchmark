@@ -1,14 +1,24 @@
 import getDefaultConfig from '@/lib/config/default';
+import {isoDate} from '@/lib/helpers';
 import { HumanReport } from '../humanReport';
 import { JsonReport } from '../jsonReport';
-import { humanReportResult, jsonRawReportResult, jsonReportResult} from './mock';
+import { humanReportResult, isoDate as isoDateMock, jsonRawReportResult, jsonReportResult} from './mock';
+
+jest.mock('@/lib/helpers', () => ({
+    isoDate: jest.fn(() => isoDateMock),
+}));
 
 describe('Reports:', () => {
 
     describe('humanReport', () => {
         it('provides table-view of raw json report', () => {
             const reporter = new HumanReport();
-            reporter.prepareData(getDefaultConfig(), jsonRawReportResult);
+            reporter.prepareData({
+                startedAt: isoDate(),
+                completedAt: isoDate(),
+                config: getDefaultConfig(),
+                report: jsonRawReportResult,
+            });
 
             expect(reporter.exposeInternalView()).toEqual(humanReportResult);
         });
@@ -17,7 +27,12 @@ describe('Reports:', () => {
     describe('jsonReport', () => {
         it('provides json report', () => {
             const reporter = new JsonReport();
-            reporter.prepareData(getDefaultConfig(), jsonRawReportResult);
+            reporter.prepareData({
+                startedAt: isoDate(),
+                completedAt: isoDate(),
+                config: getDefaultConfig(),
+                report: jsonRawReportResult,
+            });
 
             expect(reporter.exposeInternalView()).toEqual(jsonReportResult);
         });

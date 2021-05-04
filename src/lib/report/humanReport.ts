@@ -1,6 +1,4 @@
-import { IConfig } from '@/lib/config';
-import { IJsonReport } from '@/lib/dataProcessor';
-import { IReport } from '@/types';
+import { IPrepareDataParams, IReport } from '@/types';
 import cTable = require('console.table');
 import * as fs from 'fs-extra';
 import jstat from 'jstat';
@@ -31,7 +29,8 @@ export class HumanReport implements IReport {
         };
     }
 
-    public prepareData(config: IConfig, {data, sites}: IJsonReport) {
+    public prepareData({config, report}: IPrepareDataParams) {
+        const {sites, data} = report;
         const siteNames = sites.map((site) => site.name);
         const diffSiteNames = siteNames.filter((_, index) => index > 0);
         this.headers = [

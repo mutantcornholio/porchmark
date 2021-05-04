@@ -60,9 +60,16 @@ export interface IJsonRawReport {
     data: IJsonRawReportData;
 }
 
+export interface IPrepareDataParams {
+    startedAt: string;
+    completedAt: string;
+    config: IConfig;
+    report: IJsonRawReport;
+}
+
 export interface IReport {
     /* Obtain and convert JsonReport to internal view */
-    prepareData(config: IConfig, data: IJsonRawReport): void;
+    prepareData(params: IPrepareDataParams): void;
 
     /* Flush internal data to file system */
     saveToFs(workDir: string, id: string): void;

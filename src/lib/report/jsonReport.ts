@@ -1,7 +1,6 @@
 import {PORCHMARK_REPORT_VERSION, PORCHMARK_VERSION} from '@/constants';
-import { IConfig, IConfigMetricsAggregation } from '@/lib/config';
-import { IJsonRawReport, IMetric } from '@/types';
-import { IReport, ISite } from '@/types';
+import { IConfigMetricsAggregation } from '@/lib/config';
+import { IMetric, IPrepareDataParams, IReport, ISite } from '@/types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -25,6 +24,8 @@ interface IJsonReportData {
 interface IJsonReport {
     version: string;
     reportVersion: number;
+    startedAt: string;
+    completedAt: string;
     sites: ISite[];
     metrics: IMetric[];
     metricAggregations: IConfigMetricsAggregation[];
@@ -32,12 +33,16 @@ interface IJsonReport {
 }
 
 export class JsonReport implements IReport {
+    private startedAt: string;
+    private completedAt: string;
     private sites: ISite[];
     private metrics: IMetric[];
     private metricAggregations: IConfigMetricsAggregation[];
     private data: IJsonReportData;
 
     public constructor() {
+        this.startedAt = '';
+        this.completedAt = '';
         this.sites = [];
         this.metrics = [];
         this.metricAggregations = [];
@@ -48,7 +53,9 @@ export class JsonReport implements IReport {
     }
 
     /* Obtain and convert JsonReport to internal view */
-    public prepareData(_: IConfig, report: IJsonRawReport) {
+    public prepareData({startedAt, completedAt, report}: IPrepareDataParams) {
+        this.startedAt = startedAt;
+        this.completedAt = completedAt;
         this.sites = report.sites;
         this.metrics = report.metrics;
         this.metricAggregations = report.metricAggregations;
@@ -72,6 +79,8 @@ export class JsonReport implements IReport {
         return {
             version: PORCHMARK_VERSION,
             reportVersion: PORCHMARK_REPORT_VERSION,
+            startedAt: this.startedAt,
+            completedAt: this.completedAt,
             sites: this.sites,
             metrics: this.metrics,
             metricAggregations: this.metricAggregations,

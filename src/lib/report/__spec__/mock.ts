@@ -6,6 +6,8 @@ import { sites, jsonReportResult as jsonRawReportResult} from '@/lib/dataProcess
 
 export {sites, jsonRawReportResult};
 
+export const isoDate = '2021-05-04T11:58:48.552Z';
+
 export const humanReportResult = {
     "headers": [
       "metric",
@@ -617,6 +619,8 @@ export const humanReportResult = {
 export const jsonReportResult = {
     version: PORCHMARK_VERSION,
     reportVersion: PORCHMARK_REPORT_VERSION,
+    startedAt: isoDate,
+    completedAt: isoDate,
     ...jsonRawReportResult,
     data: {
         ...jsonRawReportResult.data,

@@ -52,3 +52,5 @@ export function isInteractive(): boolean {
 export function assertNonNull<T>(obj: T): asserts obj is NonNullable<T> {
     assert.notEqual(obj, null);
 }
+
+export const isoDate = () => (new Date()).toISOString();
