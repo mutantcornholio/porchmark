@@ -12,7 +12,7 @@ const logger = createLogger();
 setLogger(logger);
 
 import {startComparison} from '@/lib/comparison';
-import {resolveConfig} from '@/lib/config';
+import {resolveConfig, saveConfig} from '@/lib/config';
 import {getView} from '@/lib/view';
 
 const view = getView();
@@ -50,6 +50,8 @@ program
         const logfilePath = path.resolve(config.workDir, 'porchmark.log');
 
         setLogfilePath(logfilePath);
+
+        await saveConfig(logger, config);
 
         logger.info('config', config);
 
