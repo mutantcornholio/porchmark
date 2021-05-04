@@ -37,6 +37,7 @@
     "dist",
     "types",
     "wpr",
-    "install.js"
+    "install.js",
+    "example"
   ]
 }

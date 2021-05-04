@@ -11,6 +11,14 @@ What do you think?
 npm install -g porchmark
 ```
 
+### Example:
+
+```
+npm i
+cd example
+node ../dist/bin/porchmark.js compare -c ./porchmark.puppeteer.conf.js
+```
+
 ### Usage:
 #### Puppeteer mode
 porchmark launches several headless chromium browsers on your desktop. Easy start, but there's never enough CPU to get that data fast. It's possible to run porchmark in puppeteer mode on server, but that'll require X.  
