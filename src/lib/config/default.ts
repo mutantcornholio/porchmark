@@ -24,6 +24,7 @@ export default (): IConfig => ({
         pageNavigationTimeout: 60000,
         waitUntil: 'load',
         retryCount: 10,
+        warmIterations: 1,
     },
     webdriverOptions: {
         host: 'localhost',

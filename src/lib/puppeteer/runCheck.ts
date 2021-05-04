@@ -57,6 +57,17 @@ export async function runPuppeteerCheck(
             const [browser] = await Promise.all([launchBrowser(launchOptions), wprReplay.start()]);
             bros[siteIndex] = browser;
 
+            // warmIterations
+            if (options.warmIterations) {
+                logger.trace(`warm page before compare: iterations=${options.warmIterations}`);
+                const pageProfile = preparePageProfile(config);
+
+                for (let i = 0; i < options.warmIterations; i++) {
+                    const page = await createPage(browser, pageProfile);
+                    await page.close();
+                }
+            }
+
         } else {
             bros[siteIndex] = await launchBrowser(prepareBrowserLaunchOptions(config));
         }

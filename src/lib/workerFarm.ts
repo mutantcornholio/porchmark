@@ -126,6 +126,7 @@ export default async function startWorking(
                 comparison: workerComparision,
                 config: workerConfig,
                 compareId,
+                warmIterations: config.puppeteerOptions.warmIterations,
             }),
         ]);
 

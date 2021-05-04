@@ -22,6 +22,7 @@ export interface ICheckOptions {
     compareId: number;
     comparison: IComparison;
     config: IConfig;
+    warmIterations: number;
 }
 
 export interface IMetric {
