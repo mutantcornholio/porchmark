@@ -1,3 +1,4 @@
+import {PORCHMARK_REPORT_VERSION, PORCHMARK_VERSION} from '@/constants';
 import { IConfig, IConfigMetricsAggregation } from '@/lib/config';
 import { IJsonRawReport, IMetric } from '@/types';
 import { IReport, ISite } from '@/types';
@@ -22,6 +23,8 @@ interface IJsonReportData {
 }
 
 interface IJsonReport {
+    version: string;
+    reportVersion: number;
     sites: ISite[];
     metrics: IMetric[];
     metricAggregations: IConfigMetricsAggregation[];
@@ -67,6 +70,8 @@ export class JsonReport implements IReport {
     /* For testing purposes only */
     public exposeInternalView() {
         return {
+            version: PORCHMARK_VERSION,
+            reportVersion: PORCHMARK_REPORT_VERSION,
             sites: this.sites,
             metrics: this.metrics,
             metricAggregations: this.metricAggregations,

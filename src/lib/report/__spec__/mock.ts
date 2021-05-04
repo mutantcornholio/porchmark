@@ -1,5 +1,6 @@
-
 /* tslint:disable */
+
+import {PORCHMARK_REPORT_VERSION, PORCHMARK_VERSION} from '@/constants';
 
 import { sites, jsonReportResult as jsonRawReportResult} from '@/lib/dataProcessor/__spec__/mock';
 
@@ -611,9 +612,11 @@ export const humanReportResult = {
         ]
       ]
   }
-  
+
 
 export const jsonReportResult = {
+    version: PORCHMARK_VERSION,
+    reportVersion: PORCHMARK_REPORT_VERSION,
     ...jsonRawReportResult,
     data: {
         ...jsonRawReportResult.data,
