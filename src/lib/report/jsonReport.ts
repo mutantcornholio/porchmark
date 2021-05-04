@@ -26,6 +26,8 @@ interface IJsonReport {
     reportVersion: number;
     startedAt: string;
     completedAt: string;
+    status: string;
+    statusMessage: string;
     sites: ISite[];
     metrics: IMetric[];
     metricAggregations: IConfigMetricsAggregation[];
@@ -35,6 +37,8 @@ interface IJsonReport {
 export class JsonReport implements IReport {
     private startedAt: string;
     private completedAt: string;
+    private status: string;
+    private statusMessage: string;
     private sites: ISite[];
     private metrics: IMetric[];
     private metricAggregations: IConfigMetricsAggregation[];
@@ -43,6 +47,8 @@ export class JsonReport implements IReport {
     public constructor() {
         this.startedAt = '';
         this.completedAt = '';
+        this.status = '';
+        this.statusMessage = '';
         this.sites = [];
         this.metrics = [];
         this.metricAggregations = [];
@@ -53,9 +59,12 @@ export class JsonReport implements IReport {
     }
 
     /* Obtain and convert JsonReport to internal view */
-    public prepareData({startedAt, completedAt, report}: IPrepareDataParams) {
+    public prepareData(params: IPrepareDataParams) {
+        const {startedAt, completedAt, status, statusMessage, report} = params;
         this.startedAt = startedAt;
         this.completedAt = completedAt;
+        this.status = status;
+        this.statusMessage = statusMessage;
         this.sites = report.sites;
         this.metrics = report.metrics;
         this.metricAggregations = report.metricAggregations;
@@ -81,6 +90,8 @@ export class JsonReport implements IReport {
             reportVersion: PORCHMARK_REPORT_VERSION,
             startedAt: this.startedAt,
             completedAt: this.completedAt,
+            status: this.status,
+            statusMessage: this.statusMessage,
             sites: this.sites,
             metrics: this.metrics,
             metricAggregations: this.metricAggregations,

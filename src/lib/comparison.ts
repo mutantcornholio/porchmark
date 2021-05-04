@@ -81,9 +81,15 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
 
         const completedAt = isoDate();
 
+        // TODO process status and status message
+        const status = 'not_implemented';
+        const statusMessage = 'not implemented yet';
+
         await saveReports({
             startedAt,
             completedAt,
+            status,
+            statusMessage,
             jsonRawReport,
             config,
             id: 'total',

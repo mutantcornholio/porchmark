@@ -9,6 +9,8 @@ export { JsonReport } from './jsonReport';
 export async function saveReports({
     startedAt,
     completedAt,
+    status,
+    statusMessage,
     id,
     workDir,
     config,
@@ -17,6 +19,8 @@ export async function saveReports({
 }: {
     startedAt: string,
     completedAt: string,
+    status: string,
+    statusMessage: string,
     config: IConfig,
     jsonRawReport: IJsonRawReport,
     reporters: Class<IReport>[],
@@ -28,6 +32,8 @@ export async function saveReports({
         reporterInstance.prepareData({
             startedAt,
             completedAt,
+            status,
+            statusMessage,
             config,
             report: jsonRawReport,
         });

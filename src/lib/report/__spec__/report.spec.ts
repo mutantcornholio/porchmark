@@ -16,6 +16,8 @@ describe('Reports:', () => {
             reporter.prepareData({
                 startedAt: isoDate(),
                 completedAt: isoDate(),
+                status: 'success',
+                statusMessage: 'okay',
                 config: getDefaultConfig(),
                 report: jsonRawReportResult,
             });
@@ -30,6 +32,8 @@ describe('Reports:', () => {
             reporter.prepareData({
                 startedAt: isoDate(),
                 completedAt: isoDate(),
+                status: 'success',
+                statusMessage: 'okay',
                 config: getDefaultConfig(),
                 report: jsonRawReportResult,
             });

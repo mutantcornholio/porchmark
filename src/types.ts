@@ -63,6 +63,8 @@ export interface IJsonRawReport {
 export interface IPrepareDataParams {
     startedAt: string;
     completedAt: string;
+    status: string;
+    statusMessage: string;
     config: IConfig;
     report: IJsonRawReport;
 }

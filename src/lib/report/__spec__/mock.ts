@@ -621,6 +621,8 @@ export const jsonReportResult = {
     reportVersion: PORCHMARK_REPORT_VERSION,
     startedAt: isoDate,
     completedAt: isoDate,
+    status: 'success',
+    statusMessage: 'okay',
     ...jsonRawReportResult,
     data: {
         ...jsonRawReportResult.data,
