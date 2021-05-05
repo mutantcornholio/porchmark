@@ -1,9 +1,12 @@
-
 /* tslint:disable */
+
+import {PORCHMARK_REPORT_VERSION, PORCHMARK_VERSION} from '@/constants';
 
 import { sites, jsonReportResult as jsonRawReportResult} from '@/lib/dataProcessor/__spec__/mock';
 
 export {sites, jsonRawReportResult};
+
+export const isoDate = '2021-05-04T11:58:48.552Z';
 
 export const humanReportResult = {
     "headers": [
@@ -611,9 +614,15 @@ export const humanReportResult = {
         ]
       ]
   }
-  
+
 
 export const jsonReportResult = {
+    version: PORCHMARK_VERSION,
+    reportVersion: PORCHMARK_REPORT_VERSION,
+    startedAt: isoDate,
+    completedAt: isoDate,
+    status: 'success',
+    statusMessage: 'okay',
     ...jsonRawReportResult,
     data: {
         ...jsonRawReportResult.data,

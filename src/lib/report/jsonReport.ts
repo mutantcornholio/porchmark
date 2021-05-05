@@ -1,6 +1,6 @@
-import { IConfig, IConfigMetricsAggregation } from '@/lib/config';
-import { IJsonRawReport, IMetric } from '@/types';
-import { IReport, ISite } from '@/types';
+import {PORCHMARK_REPORT_VERSION, PORCHMARK_VERSION} from '@/constants';
+import { IConfigMetricsAggregation } from '@/lib/config';
+import { IMetric, IPrepareDataParams, IReport, ISite } from '@/types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -22,6 +22,12 @@ interface IJsonReportData {
 }
 
 interface IJsonReport {
+    version: string;
+    reportVersion: number;
+    startedAt: string;
+    completedAt: string;
+    status: string;
+    statusMessage: string;
     sites: ISite[];
     metrics: IMetric[];
     metricAggregations: IConfigMetricsAggregation[];
@@ -29,12 +35,20 @@ interface IJsonReport {
 }
 
 export class JsonReport implements IReport {
+    private startedAt: string;
+    private completedAt: string;
+    private status: string;
+    private statusMessage: string;
     private sites: ISite[];
     private metrics: IMetric[];
     private metricAggregations: IConfigMetricsAggregation[];
     private data: IJsonReportData;
 
     public constructor() {
+        this.startedAt = '';
+        this.completedAt = '';
+        this.status = '';
+        this.statusMessage = '';
         this.sites = [];
         this.metrics = [];
         this.metricAggregations = [];
@@ -45,7 +59,12 @@ export class JsonReport implements IReport {
     }
 
     /* Obtain and convert JsonReport to internal view */
-    public prepareData(_: IConfig, report: IJsonRawReport) {
+    public prepareData(params: IPrepareDataParams) {
+        const {startedAt, completedAt, status, statusMessage, report} = params;
+        this.startedAt = startedAt;
+        this.completedAt = completedAt;
+        this.status = status;
+        this.statusMessage = statusMessage;
         this.sites = report.sites;
         this.metrics = report.metrics;
         this.metricAggregations = report.metricAggregations;
@@ -67,6 +86,12 @@ export class JsonReport implements IReport {
     /* For testing purposes only */
     public exposeInternalView() {
         return {
+            version: PORCHMARK_VERSION,
+            reportVersion: PORCHMARK_REPORT_VERSION,
+            startedAt: this.startedAt,
+            completedAt: this.completedAt,
+            status: this.status,
+            statusMessage: this.statusMessage,
             sites: this.sites,
             metrics: this.metrics,
             metricAggregations: this.metricAggregations,

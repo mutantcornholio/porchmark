@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import {ChartReport} from 'porchmark-pretty-reporter';
+// import {ChartReport} from 'porchmark-pretty-reporter';
 
 import {IComparison, IConfig} from '@/lib/config';
 import {DataProcessor} from '@/lib/dataProcessor';
@@ -7,6 +7,7 @@ import {getLogger} from '@/lib/logger';
 import {HumanReport, JsonReport, saveReports} from '@/lib/report';
 
 import {getComparisonDir} from '@/lib/fs';
+import {isoDate} from '@/lib/helpers';
 import {getView} from '@/lib/view';
 import startWorking from '@/lib/workerFarm';
 import {recordWprArchives} from '@/lib/wpr';
@@ -17,6 +18,8 @@ const logger = getLogger();
 const view = getView();
 
 export async function startComparison(config: IConfig, comparison: IComparison) {
+    const startedAt = isoDate();
+
     logger.info(`pid=${process.pid}`);
 
     const dataProcessor = new DataProcessor(config, comparison);
@@ -76,7 +79,17 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
 
         const jsonRawReport = await dataProcessor.calcReport(comparison.sites);
 
+        const completedAt = isoDate();
+
+        // TODO process status and status message
+        const status = 'not_implemented';
+        const statusMessage = 'not implemented yet';
+
         await saveReports({
+            startedAt,
+            completedAt,
+            status,
+            statusMessage,
             jsonRawReport,
             config,
             id: 'total',
@@ -84,7 +97,8 @@ export async function startComparison(config: IConfig, comparison: IComparison) 
             reporters: [
                 HumanReport,
                 JsonReport,
-                ChartReport,
+                // TODO fix types in https://github.com/re-gor/porchmark-pretty-reporter
+                // ChartReport,
             ],
         });
 
