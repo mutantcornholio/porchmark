@@ -15,7 +15,8 @@
                 "allow-leading-underscore",
                 "allow-pascal-case"
             ]
-        }
+        },
+        "interface-name": false
     },
     "jsRules": {
         "quotemark": [true, "single"],
