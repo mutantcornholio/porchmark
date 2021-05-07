@@ -78,3 +78,5 @@ typings/
 /compare
 
 /example
+.DS_Store
+/html-report-report.html
