@@ -1,20 +1,21 @@
+import { IPrepareDataParams, IReport } from '@/types';
 import {promises as fs} from 'fs';
 import path from 'path';
-import { IReport, IJsonRawReport, IConfig } from './types/porchmark';
+
 import * as d3 from 'd3';
 import { JSDOM } from 'jsdom';
-import { html } from './lib/template';
 import { AggregationBarChart } from './lib/aggregationBarChart';
 import { LineChart } from './lib/lineChart';
+import { html } from './lib/template';
 
 export class ChartReport implements IReport {
-    result: string;
+    public result: string;
 
     constructor() {
         this.result = 'Nothing here. Use prepareData';
     }
 
-    wrapHtml({body}: {body: string | Element}) {
+    public wrapHtml({body}: {body: string | Element}) {
         return `
             <!DOCTYPE html>
             <html>
@@ -27,14 +28,14 @@ export class ChartReport implements IReport {
                     ${body}
                 </body>
             </html>
-        `
+        `;
     }
 
-    exposeInternalView() {
+    public exposeInternalView() {
         throw new Error('exposeInternalView: Not implemented');
     }
 
-    prepareData(config: IConfig, data: IJsonRawReport) {
+    public prepareData({report}: IPrepareDataParams) {
         const doc = (new JSDOM()).window.document;
         const body2 = d3.select(doc.body)
             .append('svg')
@@ -45,37 +46,37 @@ export class ChartReport implements IReport {
             .data([0, 40, 100, 150, 200])
             .join('rect')
             .attr('x', 0)
-            .attr('y', (d, i) => d)
+            .attr('y', (d) => d)
             .attr('width', '100')
             .attr('height', '20')
-            .node()
-            
-        const chartChunks = data.metrics.map(metric => {
+            .node();
+
+        const chartChunks = report.metrics.map((metric) => {
             const {name, title} = metric;
 
-            const lineChart = data.data.allMetrics ? new LineChart().prepare({
-                metrics: data.data.allMetrics[name],
-                sites: data.sites,
+            const lineChart = report.data.allMetrics ? new LineChart().prepare({
+                metrics: report.data.allMetrics[name],
+                sites: report.sites,
             }).node() : '';
 
-            const sortedLineChart = data.data.allMetrics ? new LineChart().prepare({
-                metrics: Object.entries(data.data.allMetrics[name])
+            const sortedLineChart = report.data.allMetrics ? new LineChart().prepare({
+                metrics: Object.entries(report.data.allMetrics[name])
                     .reduce((acc: {[i: string]: number[]}, [site, values]) => {
-                        acc[site] = values.sort((a, b) => a - b)
+                        acc[site] = values.sort((a, b) => a - b);
                         return acc;
                     }, {}),
-                sites: data.sites,
+                sites: report.sites,
             }).node() : '';
 
             const barChart = new AggregationBarChart().prepare({
-                aggregations: data.data.metrics[name],
+                aggregations: report.data.metrics[name],
                 metricName: name,
-                sites: data.sites,
+                sites: report.sites,
             }).node();
 
             return html`
                 <div id="metric-${name}">
-                    <h2> 
+                    <h2>
                         ${title || name}
                     </h2>
 
@@ -94,7 +95,7 @@ export class ChartReport implements IReport {
                         ${barChart}
                     </div>
                 </div>
-            `
+            `;
         });
 
         this.result = this.wrapHtml({
@@ -102,11 +103,11 @@ export class ChartReport implements IReport {
                 <div id="metrics">
                     ${chartChunks}
                 </div>
-            `.outerHTML
+            `.outerHTML,
         });
     }
 
-    async saveToFs(workDir: string, id: string) {
+    public async saveToFs(workDir: string, id: string) {
         await fs.writeFile(path.resolve(workDir, `html-report-${id}.html`), this.result);
     }
 }

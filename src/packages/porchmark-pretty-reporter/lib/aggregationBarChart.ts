@@ -1,4 +1,4 @@
-import { ISite } from '../types/porchmark';
+import { ISite } from '@/types';
 import * as d3 from 'd3';
 import {createSvg} from './utils';
 
@@ -6,28 +6,28 @@ interface MetricAggregation {
     [index: string]: { // key=aggregation
         [index: string]: number; // key=site name, value = metric value
     };
-};
+}
 
 interface Data {
-    aggregations: MetricAggregation,
-    metricName: string,
-    sites: ISite[],
-};
+    aggregations: MetricAggregation;
+    metricName: string;
+    sites: ISite[];
+}
 
 interface Config {
-    width?: number,
-    height?: number,
-    lowBound?: number,
-    format?: string,
-    labelSize?: number,
-    valueSize?: number
+    width?: number;
+    height?: number;
+    lowBound?: number;
+    format?: string;
+    labelSize?: number;
+    valueSize?: number;
 }
 
 export class AggregationBarChart {
-    chart: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-    config: Required<Config>;
-    format: (n: number) => string;
-    signedFormat: (n: number) => string;
+    public chart: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    public config: Required<Config>;
+    public format: (n: number) => string;
+    public signedFormat: (n: number) => string;
 
     constructor(
         {
@@ -37,15 +37,15 @@ export class AggregationBarChart {
             format = '.2f',
             labelSize = 16,
             valueSize = 12,
-        }: Config = {}
+        }: Config = {},
     ) {
         this.chart = createSvg();
         this.config = {
             height, width, lowBound, format, labelSize, valueSize,
         };
 
-        this.format = d3.format(format)
-        this.signedFormat = d3.format(`+${format}`)
+        this.format = d3.format(format);
+        this.signedFormat = d3.format(`+${format}`);
     }
 
     public prepare(
@@ -62,23 +62,23 @@ export class AggregationBarChart {
                 acc.push(...Object.values(agg));
 
                 return acc;
-            }, [])
+            }, []);
 
         const getName = (aggName: string, site: string) => `${aggName}-${site}`;
 
         const keys: string[] = Object
             .entries(aggregations)
             .reduce((acc: string[], [aggName, aggValues]) => {
-                acc.push(...Object.keys(aggValues).map(site => getName(aggName, site)));
+                acc.push(...Object.keys(aggValues).map((site) => getName(aggName, site)));
 
                 return acc;
-            }, [])
+            }, []);
 
         const marginTop = margin.top + sites.length * config.labelSize;
 
         const y = d3.scaleLinear()
-            .domain([config.lowBound, <number>d3.max(values)])
-            .range([0, config.height - margin.bottom - marginTop])
+            .domain([config.lowBound, d3.max(values) as number])
+            .range([0, config.height - margin.bottom - marginTop]);
 
         const x = d3.scaleBand()
             .domain(keys)
@@ -90,15 +90,15 @@ export class AggregationBarChart {
                 const baseline = aggValues[sites[0].name];
                 const aggrDiffs = Object
                     .values(aggValues)
-                    .map((val, i) => i != 0 ? val - baseline : NaN)
+                    .map((val, i) => i !== 0 ? val - baseline : NaN);
 
-                acc.push(...aggrDiffs)
+                acc.push(...aggrDiffs);
 
                 return acc;
-            }, [])
+            }, []);
 
         // Bad typings in @types/d3
-        // @ts-ignore   
+        // @ts-ignore
         const rectData: Array<[string, number, number]> = d3.zip(keys, values, diffs);
 
         // Root
@@ -114,11 +114,11 @@ export class AggregationBarChart {
             .join('rect')
             .attr('fill', 'steelblue')
             .attr('width', x.bandwidth() - 5)
-            .attr('height', ([, value]) => y(value))
-            .attr('y', ([, value]) => config.height - margin.bottom - y(value))
-            .attr('x', ([key]) => x(key) || 0)
+            .attr('height', ([, value]: [string, number, number]) => y(value) || 0)
+            .attr('y', ([, value]: [string, number, number]) => config.height - margin.bottom - (y(value) || 0))
+            .attr('x', ([key]: [string, number, number]) => x(key) || 0)
             ;
-            
+
         // Values
         chart.append('g')
             .selectAll('text')
@@ -130,9 +130,12 @@ export class AggregationBarChart {
             .attr('fill', 'white')
             .attr('text-anchor', 'middle')
             .text(([, value]) => this.format(value))
-            .attr('y', ([, value]) => config.height - margin.bottom - y(value) + config.valueSize * 2)
+            .attr('y', (
+                    [, value]: [string, number, number],
+                ) => config.height - margin.bottom - (y(value) || 0) + config.valueSize * 2,
+            )
             ;
-        
+
         // diffs
         chart.append('g')
             .selectAll('text')
@@ -144,7 +147,7 @@ export class AggregationBarChart {
             .attr('fill', 'white')
             .attr('text-anchor', 'middle')
             .text(([, , diff]) => Number.isNaN(diff) ? '' : this.signedFormat(diff))
-            .attr('y', ([, value]) => config.height - margin.bottom - y(value) + config.valueSize * 3)
+            .attr('y', ([, value]) => config.height - margin.bottom - (y(value) || 0) + config.valueSize * 3)
             ;
 
         // x-axis

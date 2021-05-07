@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 
 export function createSvg() {
     const doc = Doc.getDocument();
-    const domSvg = doc.createElementNS("http://www.w3.org/2000/svg", "svg")
+    const domSvg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svg = d3.select(domSvg);
 
     Doc.clear();
@@ -12,29 +12,29 @@ export function createSvg() {
 }
 
 export class Doc {
-    private static dom: JSDOM;
 
-    private static checkDom() {
-        if (!Doc.dom) {
-            Doc.dom = new JSDOM()
-        }    
-    }
-
-    static getWindow() {
+    public static getWindow() {
         Doc.checkDom();
 
         return Doc.dom.window;
     }
 
-    static getDocument() {
+    public static getDocument() {
         return Doc.getWindow().document;
     }
 
-    static getBody() {
+    public static getBody() {
         return Doc.getDocument().body;
     }
 
-    static clear() {
+    public static clear() {
         Doc.dom.window.document.write();
+    }
+    private static dom: JSDOM;
+
+    private static checkDom() {
+        if (!Doc.dom) {
+            Doc.dom = new JSDOM();
+        }
     }
 }
